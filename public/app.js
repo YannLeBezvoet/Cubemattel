@@ -7,6 +7,53 @@ const linkCount = document.getElementById("linkCount");
 const cubeScene = document.getElementById("cubeScene");
 let myCubeId = "";
 
+// Palettes rétro inspirées du Cube World de Mattel
+const retroPalettes = [
+  { // Turquoise
+    top: 0x00d4d4,
+    left: 0x00a8a8,
+    right: 0x008080,
+    glow: 0x00ffff,
+    accent: 0xffff00,
+  },
+  { // Rose
+    top: 0xff4a7c,
+    left: 0xff1744,
+    right: 0xcc0033,
+    glow: 0xff69b4,
+    accent: 0xffff00,
+  },
+  { // Jaune
+    top: 0xffee00,
+    left: 0xffcc00,
+    right: 0xffaa00,
+    glow: 0xffff33,
+    accent: 0xff0000,
+  },
+  { // Bleu
+    top: 0x0066ff,
+    left: 0x0044cc,
+    right: 0x003399,
+    glow: 0x0099ff,
+    accent: 0xffff00,
+  },
+  { // Orange
+    top: 0xff8800,
+    left: 0xff6600,
+    right: 0xcc4400,
+    glow: 0xffaa00,
+    accent: 0xffff00,
+  },
+  { // Vert
+    top: 0x00cc66,
+    left: 0x00aa44,
+    right: 0x008833,
+    glow: 0x00ff88,
+    accent: 0xffff00,
+  },
+];
+
+// Palettes originales (pour compatibilité)
 const palettes = {
   Dodger: {
     top: 0x82dbff,
@@ -200,83 +247,53 @@ function createCubeNode(id) {
 }
 
 function drawCube(node, cube) {
-  const palette = palettes[cube.character] || palettes.Dodger;
   const pose = getPose(cube);
 
-  node.plate.clear();
-  node.plate.beginFill(0x02060f, 0.42);
-  node.plate.drawEllipse(0, 44, 38, 10);
-  node.plate.endFill();
-
-  node.halo.clear();
-  node.halo.lineStyle(12, palette.glow, 0.18);
-  node.halo.drawCircle(0, -8, 35);
-
+  // Carré gris en fond
   node.cubeShape.clear();
-  node.cubeShape.lineStyle(2, 0xffffff, 0.24);
-  node.cubeShape.beginFill(palette.left, 1);
-  node.cubeShape.drawRoundedRect(-30, -34, 60, 60, 10);
-  node.cubeShape.endFill();
-  node.cubeShape.beginFill(palette.top, 0.96);
-  node.cubeShape.drawRoundedRect(-30, -34, 60, 18, 10);
-  node.cubeShape.endFill();
-  node.cubeShape.beginFill(palette.right, 0.2);
-  node.cubeShape.drawRoundedRect(-30, -16, 60, 42, 10);
+  node.cubeShape.lineStyle(2, 0x333333, 1);
+  node.cubeShape.beginFill(0xcccccc, 1);
+  node.cubeShape.drawRect(-40, -40, 80, 80);
   node.cubeShape.endFill();
 
+  // Bonhomme bâton en noir, centré et contenu dans le carré
   const figureScaleY = cube.orientation === "upside_down" ? -1 : 1;
-  const originY = cube.orientation === "upside_down" ? 30 : -2;
+  const originY = cube.orientation === "upside_down" ? 10 : -10;
   node.figure.scale.y = figureScaleY;
   node.figure.position.set(0, originY);
-  node.prop.scale.y = figureScaleY;
-  node.prop.position.set(0, originY);
 
   node.figure.clear();
-  node.figure.lineStyle(4, 0xf8fbff, 1);
-  node.figure.drawCircle(0, -20, 8);
-  node.figure.moveTo(pose.body[0], pose.body[1]);
-  node.figure.lineTo(pose.body[2], pose.body[3]);
-  node.figure.moveTo(pose.leftArm[0], pose.leftArm[1]);
-  node.figure.lineTo(pose.leftArm[2], pose.leftArm[3]);
-  node.figure.moveTo(pose.rightArm[0], pose.rightArm[1]);
-  node.figure.lineTo(pose.rightArm[2], pose.rightArm[3]);
-  node.figure.moveTo(pose.leftLeg[0], pose.leftLeg[1]);
-  node.figure.lineTo(pose.leftLeg[2], pose.leftLeg[3]);
-  node.figure.moveTo(pose.rightLeg[0], pose.rightLeg[1]);
-  node.figure.lineTo(pose.rightLeg[2], pose.rightLeg[3]);
-  node.figure.lineStyle(2, 0x0d2038, 1);
-  node.figure.drawCircle(-3, -22, 1.2);
-  node.figure.drawCircle(3, -22, 1.2);
-  if (pose.mouth.length === 3) {
-    node.figure.drawCircle(pose.mouth[0], pose.mouth[1], pose.mouth[2]);
-  } else {
-    node.figure.moveTo(pose.mouth[0], pose.mouth[1]);
-    node.figure.quadraticCurveTo(pose.mouth[2], pose.mouth[3], pose.mouth[4], pose.mouth[5]);
-  }
+  node.figure.lineStyle(3, 0x000000, 1);
+  
+  // Tête
+  node.figure.drawCircle(0, -15, 6);
+  
+  // Corps
+  node.figure.moveTo(0, -9);
+  node.figure.lineTo(0, 5);
+  
+  // Bras
+  node.figure.moveTo(-8, -3);
+  node.figure.lineTo(8, -3);
+  
+  // Jambes
+  node.figure.moveTo(-4, 5);
+  node.figure.lineTo(-4, 15);
+  node.figure.moveTo(4, 5);
+  node.figure.lineTo(4, 15);
+  
+  // Yeux
+  node.figure.lineStyle(2, 0x000000, 1);
+  node.figure.drawCircle(-2, -17, 1);
+  node.figure.drawCircle(2, -17, 1);
 
+  // Enlever les éléments inutiles
+  node.plate.clear();
   node.prop.clear();
-  if (cube.character === "Dodger") {
-    node.prop.lineStyle(2, 0x062138, 1);
-    node.prop.beginFill(palette.accent, 1);
-    node.prop.drawCircle(18, 18, 7);
-    node.prop.endFill();
-    node.prop.moveTo(11, 18);
-    node.prop.lineTo(25, 18);
-    node.prop.moveTo(18, 11);
-    node.prop.lineTo(18, 25);
-  } else {
-    node.prop.lineStyle(5, palette.accent, 1);
-    node.prop.moveTo(10, 0);
-    node.prop.bezierCurveTo(26, 3, 32, 18, 18, 28);
-    node.prop.lineStyle(0);
-    node.prop.beginFill(palette.accent, 1);
-    node.prop.drawCircle(11, 28, 3.2);
-    node.prop.endFill();
-  }
+  node.halo.clear();
 
   node.label.text = cube.playerName;
   node.mood.text = `${cube.character} - ${cube.emotion}`;
-  node.cubeShape.tint = cube.id === myCubeId ? 0xfff7dc : 0xffffff;
 }
 
 function buildBackground() {
