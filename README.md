@@ -5,11 +5,17 @@ Jeu en ligne Node.js inspiré du jouet **Cube World** de Mattel.
 ## Démarrer
 
 ```bash
+nvm use
 npm install
 npm start
 ```
 
 Puis ouvrez `http://localhost:3000` dans plusieurs onglets pour simuler plusieurs cubes.
+
+## Prérequis
+
+- Node.js **18+** requis
+- avec `nvm`, la version attendue est définie dans `.nvmrc`
 
 ## Commandes
 
