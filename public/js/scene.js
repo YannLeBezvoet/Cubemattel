@@ -15,6 +15,7 @@ export function createScene({
     linksLayer: null,
     cubeLayer: null,
     linkGraphics: null,
+    panOverlay: null,
     cubeNodes: new Map(),
     links: [],
     stars: [],
@@ -24,6 +25,9 @@ export function createScene({
     resizeObserver: null,
     hasFatalError: false,
     myCubeId: "",
+    cameraX: 0,
+    cameraY: 0,
+    dragState: null,
   };
 
   return {
