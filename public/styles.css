@@ -166,12 +166,22 @@ select {
 .cube-scene {
   width: 100%;
   height: clamp(420px, 62vh, 760px);
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
 }
 
 .cube-scene canvas {
   display: block;
   width: 100%;
   height: 100% !important;
+  touch-action: none;
+  user-select: none;
+}
+
+.cube-scene.scene-pan-ready:active,
+.cube-scene.scene-pan-ready:active canvas {
+  cursor: grabbing;
 }
 
 .history-list {
