@@ -1,6 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { CubeWorldGame } = require("../src/game");
+const { CubeWorldGame, CUBE_COLORS } = require("../src/game");
 
 test("un cube réagit aux mouvements", () => {
   const game = new CubeWorldGame();
@@ -29,6 +29,22 @@ test("deux cubes connectés peuvent interagir", () => {
   assert.equal(cubeB.y, cubeA.y);
   assert.equal(Math.abs(cubeB.x - cubeA.x), 1);
   assert.ok(state.history.some((entry) => entry.text.includes("discutent ensemble")));
+});
+
+test("chaque cube reçoit une couleur aléatoire différente", () => {
+  const game = new CubeWorldGame();
+  game.createCube("a", "Alice", "Dodger");
+  game.createCube("b", "Bob", "Whip");
+
+  const state = game.getState();
+  const cubeA = state.cubes.find((cube) => cube.id === "a");
+  const cubeB = state.cubes.find((cube) => cube.id === "b");
+
+  assert.equal(typeof cubeA.color, "number");
+  assert.equal(typeof cubeB.color, "number");
+  assert.notEqual(cubeA.color, cubeB.color);
+  assert.ok(CUBE_COLORS.includes(cubeA.color));
+  assert.ok(CUBE_COLORS.includes(cubeB.color));
 });
 
 test("une connexion verticale place le cube au dessus ou en dessous", () => {
