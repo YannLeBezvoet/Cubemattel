@@ -51,9 +51,11 @@ export function createCubeNode(id, targetInput) {
 }
 
 export function drawCube(node, cube) {
+  const cubeColor = Number.isInteger(cube.color) ? cube.color : 0xcccccc;
+  const cubeFillColor = 0x9aa3b2;
   node.cubeShape.clear();
-  node.cubeShape.lineStyle(2, 0x333333, 1);
-  node.cubeShape.beginFill(0xcccccc, 1);
+  node.cubeShape.lineStyle(3, cubeColor, 1);
+  node.cubeShape.beginFill(cubeFillColor, 1);
   node.cubeShape.drawRect(-40, -40, 80, 80);
   node.cubeShape.endFill();
 
@@ -79,6 +81,11 @@ export function drawCube(node, cube) {
   node.plate.clear();
   node.prop.clear();
   node.halo.clear();
+  node.plate.beginFill(cubeFillColor, 0.16);
+  node.plate.drawRoundedRect(-46, -46, 92, 92, 12);
+  node.plate.endFill();
+  node.halo.lineStyle(4, cubeColor, 0.2);
+  node.halo.drawRoundedRect(-49, -49, 98, 98, 14);
   node.label.text = cube.playerName;
   node.mood.text = `${cube.character} - ${cube.emotion}`;
 }

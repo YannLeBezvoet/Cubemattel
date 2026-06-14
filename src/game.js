@@ -1,4 +1,18 @@
 const CHARACTERS = ["Dodger", "Whip"];
+const CUBE_COLORS = [
+  0xff6b6b,
+  0x4ecdc4,
+  0xffd166,
+  0x7b61ff,
+  0x5fa8ff,
+  0x95d46b,
+  0xff9f68,
+  0xf26ca7,
+  0x6ee7b7,
+  0xfacc15,
+  0x38bdf8,
+  0xc084fc,
+];
 
 class CubeWorldGame {
   constructor() {
@@ -12,10 +26,12 @@ class CubeWorldGame {
       ? preferredCharacter
       : CHARACTERS[this.cubes.size % CHARACTERS.length];
     const position = this._findFirstFreeCoordinate();
+    const color = this._pickRandomAvailableColor();
 
     const cube = {
       id,
       playerName,
+      color,
       character,
       orientation: "upright",
       emotion: "happy",
@@ -146,6 +162,26 @@ class CubeWorldGame {
     return { x: searchLimit + 1, y: 0 };
   }
 
+  _pickRandomAvailableColor() {
+    const usedColors = new Set(
+      [...this.cubes.values()].map((cube) => cube.color).filter(Number.isInteger)
+    );
+    const availableColors = CUBE_COLORS.filter((color) => !usedColors.has(color));
+    if (availableColors.length > 0) {
+      return availableColors[Math.floor(Math.random() * availableColors.length)];
+    }
+
+    let color;
+    do {
+      const red = 96 + Math.floor(Math.random() * 160);
+      const green = 96 + Math.floor(Math.random() * 160);
+      const blue = 96 + Math.floor(Math.random() * 160);
+      color = (red << 16) | (green << 8) | blue;
+    } while (usedColors.has(color));
+
+    return color;
+  }
+
   _ensureAllCoordinates() {
     this.cubes.forEach((cube) => {
       if (Number.isFinite(cube.x) && Number.isFinite(cube.y)) {
@@ -228,4 +264,4 @@ class CubeWorldGame {
   }
 }
 
-module.exports = { CubeWorldGame, CHARACTERS };
+module.exports = { CubeWorldGame, CHARACTERS, CUBE_COLORS };
