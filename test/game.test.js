@@ -80,3 +80,23 @@ test("une connexion verticale réaligne aussi des cubes sans coordonnées", () =
   assert.equal(alignedB.x, alignedA.x);
   assert.equal(Math.abs(alignedB.y - alignedA.y), 1);
 });
+
+test("chaque face d'un cube n'accepte qu'un seul voisin", () => {
+  const game = new CubeWorldGame();
+  game.createCube("a", "Alice", "Dodger");
+  game.createCube("b", "Bob", "Whip");
+  game.createCube("c", "Chloé", "Dodger");
+  game.createCube("d", "David", "Whip");
+
+  game.connectCubes("a", "b", "horizontal");
+  game.connectCubes("a", "c", "horizontal");
+  game.connectCubes("a", "d", "horizontal");
+
+  const state = game.getState();
+  const cubeA = state.cubes.find((cube) => cube.id === "a");
+  const cubeD = state.cubes.find((cube) => cube.id === "d");
+
+  assert.equal(cubeA.connectedTo.length, 2);
+  assert.ok(!cubeA.connectedTo.includes("d"));
+  assert.notEqual(Math.abs(cubeD.x - cubeA.x) + Math.abs(cubeD.y - cubeA.y), 1);
+});

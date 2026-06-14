@@ -10,7 +10,6 @@ const {
 class CubeWorldGame {
   constructor() {
     this.cubes = new Map();
-    this.links = new Set();
     this.history = [];
   }
 
@@ -47,11 +46,6 @@ class CubeWorldGame {
     }
 
     this.cubes.delete(id);
-    [...this.links].forEach((link) => {
-      if (link.includes(id)) {
-        this.links.delete(link);
-      }
-    });
 
     this._record(`${cube.character} (${cube.playerName}) quitte la ville.`);
     this._syncConnections();
@@ -84,14 +78,19 @@ class CubeWorldGame {
     }
 
     ensureAllCoordinates(this.cubes);
-    const orientation = direction === "vertical" ? "verticalement" : "horizontalement";
-    const key = [sourceId, targetId].sort().join("::");
-    this.links.add(key);
-    placeConnectedCube(this.cubes, sourceId, targetId, direction);
-    this._syncConnections();
+    const connected = placeConnectedCube(this.cubes, sourceId, targetId, direction);
+    if (!connected) {
+      return;
+    }
 
+    this._syncConnections();
     const source = this.cubes.get(sourceId);
     const target = this.cubes.get(targetId);
+    if (!source?.connectedTo.includes(targetId) || !target) {
+      return;
+    }
+
+    const orientation = direction === "vertical" ? "verticalement" : "horizontalement";
     this._record(
       `${source.character} et ${target.character} relient leurs cubes ${orientation} et discutent ensemble.`
     );
@@ -107,19 +106,32 @@ class CubeWorldGame {
   }
 
   _syncConnections() {
+    ensureAllCoordinates(this.cubes);
     this.cubes.forEach((cube) => {
       cube.connectedTo = [];
     });
 
-    this.links.forEach((key) => {
-      const [a, b] = key.split("::");
-      const cubeA = this.cubes.get(a);
-      const cubeB = this.cubes.get(b);
-      if (!cubeA || !cubeB) {
-        return;
-      }
-      cubeA.connectedTo.push(b);
-      cubeB.connectedTo.push(a);
+    const byPosition = new Map();
+    this.cubes.forEach((cube) => {
+      byPosition.set(`${cube.x},${cube.y}`, cube.id);
+    });
+
+    const neighbors = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ];
+
+    this.cubes.forEach((cube) => {
+      const connected = new Set();
+      neighbors.forEach(([dx, dy]) => {
+        const neighborId = byPosition.get(`${cube.x + dx},${cube.y + dy}`);
+        if (neighborId && neighborId !== cube.id) {
+          connected.add(neighborId);
+        }
+      });
+      cube.connectedTo = [...connected];
     });
   }
 

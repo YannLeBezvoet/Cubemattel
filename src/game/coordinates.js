@@ -31,41 +31,39 @@ function placeConnectedCube(cubes, sourceId, targetId, direction) {
   const source = cubes.get(sourceId);
   const target = cubes.get(targetId);
   if (!source || !target) {
-    return;
+    return false;
   }
 
-  const currentCandidates = connectionCandidates(source, direction, 1);
+  const currentCandidates = connectionCandidates(source, direction);
   const targetAlreadyPlaced = currentCandidates.some(
     (candidate) => candidate.x === target.x && candidate.y === target.y
   );
   if (targetAlreadyPlaced) {
-    return;
+    return true;
   }
 
-  const maxDistance = Math.max(2, cubes.size + 1);
-  for (let distance = 1; distance <= maxDistance; distance += 1) {
-    const candidates = connectionCandidates(source, direction, distance);
-    const destination = candidates.find(
-      (candidate) => !isPositionTaken(cubes, candidate.x, candidate.y, target.id)
-    );
-    if (destination) {
-      target.x = destination.x;
-      target.y = destination.y;
-      return;
-    }
+  const destination = currentCandidates.find(
+    (candidate) => !isPositionTaken(cubes, candidate.x, candidate.y, target.id)
+  );
+  if (!destination) {
+    return false;
   }
+
+  target.x = destination.x;
+  target.y = destination.y;
+  return true;
 }
 
-function connectionCandidates(source, direction, distance) {
+function connectionCandidates(source, direction) {
   if (direction === "vertical") {
     return [
-      { x: source.x, y: source.y + distance },
-      { x: source.x, y: source.y - distance },
+      { x: source.x, y: source.y + 1 },
+      { x: source.x, y: source.y - 1 },
     ];
   }
   return [
-    { x: source.x + distance, y: source.y },
-    { x: source.x - distance, y: source.y },
+    { x: source.x + 1, y: source.y },
+    { x: source.x - 1, y: source.y },
   ];
 }
 
