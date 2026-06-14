@@ -1,18 +1,11 @@
-const CHARACTERS = ["Dodger", "Whip"];
-const CUBE_COLORS = [
-  0xff6b6b,
-  0x4ecdc4,
-  0xffd166,
-  0x7b61ff,
-  0x5fa8ff,
-  0x95d46b,
-  0xff9f68,
-  0xf26ca7,
-  0x6ee7b7,
-  0xfacc15,
-  0x38bdf8,
-  0xc084fc,
-];
+const { CHARACTERS, CUBE_COLORS } = require("./game/constants");
+const { getMovementAction } = require("./game/movements");
+const { pickRandomAvailableColor } = require("./game/colors");
+const {
+  ensureAllCoordinates,
+  findFirstFreeCoordinate,
+  placeConnectedCube,
+} = require("./game/coordinates");
 
 class CubeWorldGame {
   constructor() {
@@ -25,8 +18,8 @@ class CubeWorldGame {
     const character = CHARACTERS.includes(preferredCharacter)
       ? preferredCharacter
       : CHARACTERS[this.cubes.size % CHARACTERS.length];
-    const position = this._findFirstFreeCoordinate();
-    const color = this._pickRandomAvailableColor();
+    const position = findFirstFreeCoordinate(this.cubes);
+    const color = pickRandomAvailableColor(this.cubes);
 
     const cube = {
       id,
@@ -70,27 +63,7 @@ class CubeWorldGame {
       return;
     }
 
-    const actions = {
-      shake: {
-        emotion: "surpris",
-        activity: "rit en étant secoué",
-      },
-      flip: {
-        emotion: "désorienté",
-        activity: "pleure puis retrouve son équilibre",
-        orientation: cube.orientation === "upright" ? "upside_down" : "upright",
-      },
-      tilt: {
-        emotion: "curieux",
-        activity: "regarde autour de lui",
-      },
-      play: {
-        emotion: "joyeux",
-        activity: cube.character === "Dodger" ? "dribble et tire" : "fait du lasso avec sa corde",
-      },
-    };
-
-    const action = actions[movement];
+    const action = getMovementAction(movement, cube);
     if (!action) {
       return;
     }
@@ -110,11 +83,11 @@ class CubeWorldGame {
       return;
     }
 
-    this._ensureAllCoordinates();
+    ensureAllCoordinates(this.cubes);
     const orientation = direction === "vertical" ? "verticalement" : "horizontalement";
     const key = [sourceId, targetId].sort().join("::");
     this.links.add(key);
-    this._placeConnectedCube(sourceId, targetId, direction);
+    placeConnectedCube(this.cubes, sourceId, targetId, direction);
     this._syncConnections();
 
     const source = this.cubes.get(sourceId);
@@ -126,7 +99,7 @@ class CubeWorldGame {
   }
 
   getState() {
-    this._ensureAllCoordinates();
+    ensureAllCoordinates(this.cubes);
     return {
       cubes: [...this.cubes.values()],
       history: this.history.slice(-20),
@@ -148,98 +121,6 @@ class CubeWorldGame {
       cubeA.connectedTo.push(b);
       cubeB.connectedTo.push(a);
     });
-  }
-
-  _findFirstFreeCoordinate(ignoredCubeId) {
-    const searchLimit = this.cubes.size + 2;
-    for (let y = -searchLimit; y <= searchLimit; y += 1) {
-      for (let x = -searchLimit; x <= searchLimit; x += 1) {
-        if (!this._isPositionTaken(x, y, ignoredCubeId)) {
-          return { x, y };
-        }
-      }
-    }
-    return { x: searchLimit + 1, y: 0 };
-  }
-
-  _pickRandomAvailableColor() {
-    const usedColors = new Set(
-      [...this.cubes.values()].map((cube) => cube.color).filter(Number.isInteger)
-    );
-    const availableColors = CUBE_COLORS.filter((color) => !usedColors.has(color));
-    if (availableColors.length > 0) {
-      return availableColors[Math.floor(Math.random() * availableColors.length)];
-    }
-
-    let color;
-    do {
-      const red = 96 + Math.floor(Math.random() * 160);
-      const green = 96 + Math.floor(Math.random() * 160);
-      const blue = 96 + Math.floor(Math.random() * 160);
-      color = (red << 16) | (green << 8) | blue;
-    } while (usedColors.has(color));
-
-    return color;
-  }
-
-  _ensureAllCoordinates() {
-    this.cubes.forEach((cube) => {
-      if (Number.isFinite(cube.x) && Number.isFinite(cube.y)) {
-        return;
-      }
-      const position = this._findFirstFreeCoordinate(cube.id);
-      cube.x = position.x;
-      cube.y = position.y;
-    });
-  }
-
-  _isPositionTaken(x, y, ignoredCubeId) {
-    return [...this.cubes.values()].some(
-      (cube) => cube.id !== ignoredCubeId && cube.x === x && cube.y === y
-    );
-  }
-
-  _placeConnectedCube(sourceId, targetId, direction) {
-    const source = this.cubes.get(sourceId);
-    const target = this.cubes.get(targetId);
-    if (!source || !target) {
-      return;
-    }
-
-    const axis = direction === "vertical" ? "vertical" : "horizontal";
-    const currentCandidates = this._connectionCandidates(source, axis, 1);
-    const targetAlreadyPlaced = currentCandidates.some(
-      (candidate) => candidate.x === target.x && candidate.y === target.y
-    );
-    if (targetAlreadyPlaced) {
-      return;
-    }
-
-    const maxDistance = Math.max(2, this.cubes.size + 1);
-    for (let distance = 1; distance <= maxDistance; distance += 1) {
-      const candidates = this._connectionCandidates(source, axis, distance);
-      const destination = candidates.find(
-        (candidate) => !this._isPositionTaken(candidate.x, candidate.y, target.id)
-      );
-      if (destination) {
-        target.x = destination.x;
-        target.y = destination.y;
-        return;
-      }
-    }
-  }
-
-  _connectionCandidates(source, axis, distance) {
-    if (axis === "vertical") {
-      return [
-        { x: source.x, y: source.y + distance },
-        { x: source.x, y: source.y - distance },
-      ];
-    }
-    return [
-      { x: source.x + distance, y: source.y },
-      { x: source.x - distance, y: source.y },
-    ];
   }
 
   _recordInteractions(sourceId, explicitTargetId) {
