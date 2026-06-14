@@ -31,3 +31,10 @@ Puis ouvrez `http://localhost:3000` dans plusieurs onglets pour simuler plusieur
 - Interactions entre personnages des cubes connectés (rencontre/discussion/visite)
 - Ville partagée en temps réel entre tous les joueurs connectés
 - Rendu de la ville en vraie scène 2D temps réel via PixiJS
+
+## Structure du code
+
+- `src/game.js` : orchestration de la simulation
+- `src/game/` : logique métier découpée (mouvements, couleurs, coordonnées, constantes)
+- `public/js/scene.js` : point d'entrée de la scène
+- `public/js/scene-*.js` : modules dédiés (setup, rendu du monde, animation, erreurs)
