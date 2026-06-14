@@ -62,8 +62,8 @@ function layoutCubes(sceneState, cubes) {
   const height = sceneState.app.screen.height;
   const centerX = width / 2;
   const centerY = height / 2;
-  const gapX = 110;
-  const gapY = 110;
+  const gapX = 80;
+  const gapY = 80;
   const myCube = cubes.find((cube) => cube.id === sceneState.myCubeId);
   const originX = Number.isFinite(myCube?.x) ? myCube.x : 0;
   const originY = Number.isFinite(myCube?.y) ? myCube.y : 0;

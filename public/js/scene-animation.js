@@ -10,22 +10,6 @@ export function animate(sceneState, delta) {
     node.y += (node.targetY + bob - node.y) * 0.11;
     node.container.position.set(node.x, node.y);
   });
-
-  drawLinks(sceneState);
-}
-
-function drawLinks(sceneState) {
-  sceneState.linkGraphics.clear();
-  sceneState.linkGraphics.lineStyle(2.5, 0x7fd4ff, 0.42);
-  sceneState.links.forEach(([source, target]) => {
-    const a = sceneState.cubeNodes.get(source);
-    const b = sceneState.cubeNodes.get(target);
-    if (!a || !b) {
-      return;
-    }
-    sceneState.linkGraphics.moveTo(a.container.x, a.container.y);
-    sceneState.linkGraphics.lineTo(b.container.x, b.container.y);
-  });
 }
 
 function getBobIntensity(emotion) {
