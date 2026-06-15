@@ -16,6 +16,8 @@ export function setupScene(sceneState, refs) {
     app = new PIXI.Application({
       antialias: true,
       backgroundAlpha: 0,
+      autoDensity: true,
+      resolution: 1,
       resizeTo: cubeScene,
     });
   } catch (error) {
@@ -60,6 +62,12 @@ export function setupScene(sceneState, refs) {
     app.renderer.resize(Math.max(1, cubeScene.clientWidth), Math.max(1, cubeScene.clientHeight));
     buildBackground(sceneState);
     updatePanOverlay(sceneState);
+    if (!sceneState.ready || !sceneState.latestWorld) {
+      return;
+    }
+
+    renderWorld(sceneState, sceneState.latestWorld, refs);
+    applyCameraTransform(sceneState);
   };
 
   if (typeof ResizeObserver === "function") {
