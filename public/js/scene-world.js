@@ -28,8 +28,20 @@ export function renderWorld(sceneState, state, refs) {
     if (!node) {
       return;
     }
+
+    const prevOrientation = node.cube?.orientation;
+    const orientationChanged = prevOrientation !== undefined && prevOrientation !== cube.orientation;
+
+    if (orientationChanged && !node.flipAnim) {
+      node.flipAnim = { progress: 0, pendingCube: cube };
+      drawCube(node, { ...cube, orientation: prevOrientation });
+    } else if (node.flipAnim) {
+      node.flipAnim.pendingCube = cube;
+    } else {
+      drawCube(node, cube);
+    }
+
     node.cube = cube;
-    drawCube(node, cube);
   });
 }
 
