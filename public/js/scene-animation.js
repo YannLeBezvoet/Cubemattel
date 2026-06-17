@@ -1,10 +1,27 @@
 import { updateBackground } from "./background.js";
+import { drawCube } from "./cube-node.js";
+
+const FLIP_SPEED = 0.04;
 
 export function animate(sceneState, delta) {
   updateBackground(sceneState, delta);
 
   sceneState.cubeNodes.forEach((node) => {
     node.phase += 0.05 * delta;
+
+    if (node.flipAnim) {
+      node.flipAnim.progress = Math.min(node.flipAnim.progress + FLIP_SPEED * delta, 1);
+      const p = node.flipAnim.progress;
+      const eased = (1 - Math.cos(p * Math.PI)) / 2;
+      node.body.rotation = eased * Math.PI;
+
+      if (p >= 1) {
+        drawCube(node, node.flipAnim.pendingCube);
+        node.body.rotation = 0;
+        node.flipAnim = null;
+      }
+    }
+
     const bob = hasConnections(node.cube)
       ? 0
       : Math.sin(node.phase) * getBobIntensity(node.cube?.emotion);

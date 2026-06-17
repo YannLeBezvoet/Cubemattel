@@ -23,7 +23,9 @@ export function createCubeNode(id, targetInput) {
   label.y = 58;
   mood.y = 74;
 
-  container.addChild(plate, halo, cubeShape, figure, prop, label, mood);
+  const body = new PIXI.Container();
+  body.addChild(plate, halo, cubeShape, figure, prop);
+  container.addChild(body, label, mood);
   container.eventMode = "static";
   container.cursor = "pointer";
   container.on("pointertap", () => {
@@ -34,6 +36,7 @@ export function createCubeNode(id, targetInput) {
   return {
     id,
     container,
+    body,
     cubeShape,
     halo,
     figure,
@@ -47,6 +50,7 @@ export function createCubeNode(id, targetInput) {
     targetY: 0,
     phase: Math.random() * Math.PI * 2,
     cube: null,
+    flipAnim: null,
   };
 }
 
