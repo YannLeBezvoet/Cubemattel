@@ -1,19 +1,19 @@
 /**
- * @file cube-node.js
+ * @file renderers/cube-node.js
  * @description PIXI.js node factory and renderer for a single cube in the scene.
  *
  * Each "cube node" is a lightweight PIXI Container holding several Graphics layers:
  *   - plate      : drop-shadow behind the entire device
  *   - halo       : coloured glow ring around the device
  *   - cubeShape  : the device body — coloured frame + dark LCD screen area
- *   - figure     : pixel-art stickman character (drawn by stickman.js)
+ *   - figure     : pixel-art stickman character (drawn by renderers/stickman.js)
  *   - prop       : character's icon at the bottom of the LCD screen
  *   - label      : player name below the device
  *   - mood       : character + emotion line below the label
  *
  * The `figure` layer is Y-flipped when the cube orientation is "upside_down".
  *
- * @dependencies PIXI.js v7 (via window.PIXI), stickman.js
+ * @dependencies PIXI.js v7 (via window.PIXI), renderers/stickman.js
  */
 
 import { drawStickman, drawProp } from "./stickman.js";

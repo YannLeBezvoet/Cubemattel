@@ -22,15 +22,19 @@ Le projet écoute sur `http://localhost:3000`.
 
 ```text
 src/server.js
-  -> bootstrap HTTP
+  -> bootstrap HTTP et Socket.IO
 src/socket-handlers.js
   -> branche les événements Socket.IO
 src/game.js
   -> compatibilité simple vers src/game/
 src/game/
   -> logique de jeu, couleurs, coordonnées, mouvements
-public/js/
-  -> DOM, scène Pixi, rendu et interactions
+public/js/scene/
+  -> scène PixiJS : initialisation, animation, rendu, pan caméra, erreurs, fond
+public/js/renderers/
+  -> rendu des entités : cube LCD et stickman pixel art
+public/js/dom.js
+  -> accès DOM, contrôles, badges, historique
 ```
 
 ## Règles métier
@@ -49,11 +53,24 @@ public/js/
 | `src/game/coordinates.js` | placement et alignement |
 | `src/game/colors.js` | sélection de couleur |
 | `src/game/movements.js` | traduction mouvement -> action |
-| `public/js/scene-setup.js` | initialisation Pixi |
-| `public/js/scene-pan.js` | caméra et pan |
-| `public/js/scene-world.js` | rendu du snapshot serveur |
-| `public/js/cube-node.js` | fabrique et rendu d'un nœud cube (frame LCD + figure) |
-| `public/js/stickman.js` | dessin pixel art du stickman et des icônes de prop |
+| `public/js/scene/index.js` | point d'entrée de la scène, factory `createScene` |
+| `public/js/scene/setup.js` | initialisation PixiJS et calques |
+| `public/js/scene/pan.js` | caméra et interactions de déplacement |
+| `public/js/scene/world.js` | rendu du snapshot serveur |
+| `public/js/scene/animation.js` | boucle d'animation par frame |
+| `public/js/scene/background.js` | étoiles et particules d'arrière-plan |
+| `public/js/scene/errors.js` | affichage d'erreurs fatales dans la scène |
+| `public/js/renderers/cube-node.js` | fabrique et rendu d'un nœud cube (frame LCD + figure) |
+| `public/js/renderers/stickman.js` | dessin pixel art du stickman et des icônes de prop |
+
+## Structure des dossiers client
+
+```text
+public/js/
+├── scene/          # Scène PixiJS (setup, rendu monde, animation, pan, fond, erreurs)
+├── renderers/      # Entités visuelles (cube LCD, stickman pixel art)
+└── dom.js          # Accès et manipulation du DOM
+```
 
 ## Rendu visuel
 
