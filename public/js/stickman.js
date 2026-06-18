@@ -1,230 +1,246 @@
 /**
  * @file stickman.js
- * @description Pixel art stickman renderer for the Cubematel LCD game aesthetic.
+ * @description Pixel-art stickman renderer for the Cubematel LCD game aesthetic.
  *
- * Draws stickman figures and character prop icons using PIXI.js Graphics objects.
- * Each "pixel" is a P×P filled square block, simulating the low-resolution
- * chunky look of a classic LCD handheld game (à la Cube World by Mattel).
+ * Draws stickman figures and character prop icons using PIXI.js Graphics.
+ * Each figure "pixel" is a P×P filled square block, simulating the chunky
+ * LCD look of classic handheld games (à la Cube World by Mattel).
  *
- * Coordinate system (figure-local):
- *   - Origin (0, 0) is the figure center.
- *   - Head top: y = -24, feet bottom: y = +12. Total height: 36 display px.
- *   - The figure container is offset to (0, -10) within the cube body externally.
+ * Body parts are independent functions accepting offset parameters, making
+ * the design animation-ready for future frame-by-frame movement.
  *
- * Poses vary by emotion; props vary by character.
+ * Coordinate system (grid units, Y+ downward):
+ *   - 1 grid unit = P display pixels.
+ *   - Grid origin is the figure's visual center (hip level).
+ *   - Head top: row -8 (y = -24px), feet bottom: row +3 (y = +12px).
+ *   - Total figure: 11 grid-row span × P = 36 display px tall.
+ *   - Total figure: 8 grid-col span × P = 24 display px wide (with arms).
+ *
+ * Layout overview (grid rows, each cell = P px):
+ *
+ *   row -8...-6  HEAD       4×3 solid block
+ *   row -5       NECK       2×1 (cols -1, 0)
+ *   row -4...-1  TORSO      4×4 solid block
+ *   row  0...2   LEGS       1 col each, left=-2 right=+1
+ *   row  3       FEET       2 cols each, left=-3..-2 right=+1..+2
+ *   col -3/-4    LEFT ARM   2-segment, pose-dependent
+ *   col +2/+3    RIGHT ARM  2-segment, pose-dependent
  *
  * @dependencies PIXI.js v7 — Graphics objects are passed in, not imported directly.
  */
 
-/** Size in display pixels of each pixel-art "pixel" block. */
-const P = 4;
+/** Display pixels per grid unit. Change to scale the entire figure uniformly. */
+const P = 3;
 
-// ─── Layout constants (in figure-local display coords) ────────────────────────
-
-const HEAD_TOP = -24;      // y of head's top edge
-const BODY_TOP = HEAD_TOP + 2 * P;  // -16 : head is 2 blocks tall
-const LEGS_TOP = BODY_TOP + 3 * P;  // -4  : body is 3 blocks tall
-
-// Shoulder y = BODY_TOP; shoulder x = ±(P/2 + P) = ±(body_half + one_block)
-// Body is 4px wide centred at 0 → left edge x=-2, right edge x=+2.
-// Arms attach one block outside the body edges: left shoulder at x=-6, right at x=+2.
-
-// ─── Primitive ────────────────────────────────────────────────────────────────
+// ─── Grid primitive ───────────────────────────────────────────────────────────
 
 /**
- * Draws a single P×P pixel block at display coords (x, y).
+ * Fills a single P×P grid cell at (col, row) in figure-local display coords.
+ *
  * @param {PIXI.Graphics} gfx
- * @param {number} x
- * @param {number} y
+ * @param {number} col - Grid column
+ * @param {number} row - Grid row
  */
-function drawPx(gfx, x, y) {
-  gfx.drawRect(x, y, P, P);
+function cell(gfx, col, row) {
+  gfx.drawRect(col * P, row * P, P, P);
 }
 
-// ─── Body parts ───────────────────────────────────────────────────────────────
+// ─── Body part renderers ──────────────────────────────────────────────────────
 
 /**
- * Draws the head: a 2×2 grid of P×P blocks (8×8 display px, centred at x=0).
+ * Draws the head as a 4×3 solid block at rows -8 to -6, cols -2 to +1.
+ * Accepts dx/dy offsets for bobbing or reaction animations.
+ *
  * @param {PIXI.Graphics} gfx
- * @param {number} yTop
+ * @param {number} [dx=0] - Horizontal offset in grid units
+ * @param {number} [dy=0] - Vertical offset in grid units
  */
-function drawHead(gfx, yTop) {
-  drawPx(gfx, -P, yTop);
-  drawPx(gfx, 0,  yTop);
-  drawPx(gfx, -P, yTop + P);
-  drawPx(gfx, 0,  yTop + P);
+function drawHead(gfx, dx = 0, dy = 0) {
+  for (let r = -8; r <= -6; r++) {
+    for (let c = -2; c <= 1; c++) {
+      cell(gfx, c + dx, r + dy);
+    }
+  }
 }
 
 /**
- * Draws the body: a 4px-wide centred column of 3 pixel blocks (4×12 display px).
+ * Draws the neck as a 2×1 block at row -5, cols -1 to 0.
+ *
  * @param {PIXI.Graphics} gfx
- * @param {number} yTop
  */
-function drawBody(gfx, yTop) {
-  gfx.drawRect(-2, yTop, P, 3 * P);
+function drawNeck(gfx) {
+  cell(gfx, -1, -5);
+  cell(gfx, 0, -5);
 }
 
 /**
- * Draws both legs in a V shape.
- * Crotch: 1 shared block. Each leg then splits one block outward for 3 blocks down.
+ * Draws the torso as a 4×4 solid block at rows -4 to -1, cols -2 to +1.
+ *
  * @param {PIXI.Graphics} gfx
- * @param {number} yTop - y of the crotch block (= LEGS_TOP)
  */
-function drawLegs(gfx, yTop) {
-  gfx.drawRect(-2, yTop, P, P);            // crotch (centred)
-  gfx.drawRect(-P, yTop + P, P, 3 * P);   // left leg  (x: -4..0)
-  gfx.drawRect(0,  yTop + P, P, 3 * P);   // right leg (x:  0..4)
+function drawTorso(gfx) {
+  for (let r = -4; r <= -1; r++) {
+    for (let c = -2; c <= 1; c++) {
+      cell(gfx, c, r);
+    }
+  }
+}
+
+/**
+ * Draws both legs (rows 0–2) and feet (row 3).
+ * Each leg is 1 column wide; feet extend one cell outward on each side.
+ *
+ * @param {PIXI.Graphics} gfx
+ * @param {number} [leftX=-2]  - Column for the left leg
+ * @param {number} [rightX=1]  - Column for the right leg
+ */
+function drawLegs(gfx, leftX = -2, rightX = 1) {
+  for (let r = 0; r <= 2; r++) {
+    cell(gfx, leftX, r);
+    cell(gfx, rightX, r);
+  }
+  // Feet: 2 cells wide, extending outward from each leg
+  cell(gfx, leftX - 1, 3);
+  cell(gfx, leftX, 3);
+  cell(gfx, rightX, 3);
+  cell(gfx, rightX + 1, 3);
+}
+
+/**
+ * Draws a single 2-segment arm using grid coordinates.
+ *
+ * @param {PIXI.Graphics} gfx
+ * @param {number} col1 - Upper arm column
+ * @param {number} row1 - Upper arm row
+ * @param {number} col2 - Forearm column
+ * @param {number} row2 - Forearm row
+ */
+function drawArm(gfx, col1, row1, col2, row2) {
+  cell(gfx, col1, row1);
+  cell(gfx, col2, row2);
 }
 
 // ─── Arm poses ────────────────────────────────────────────────────────────────
+// Shoulder anchor: left at col -3 row -4, right at col +2 row -4.
+// Torso occupies cols -2..+1, so arms attach directly outside the body sides.
 
 /**
- * Arms hanging down and slightly outward (default / happy).
+ * Arms hanging down and outward (default idle pose).
+ *
  * @param {PIXI.Graphics} gfx
- * @param {number} yArm - shoulder y (= BODY_TOP)
  */
-function drawArmsDown(gfx, yArm) {
-  drawPx(gfx, -2 * P, yArm);           // left upper arm
-  drawPx(gfx, -3 * P, yArm + P);       // left forearm (down-out)
-  drawPx(gfx,      P, yArm);           // right upper arm
-  drawPx(gfx,  2 * P, yArm + P);       // right forearm
+function drawArmsDown(gfx) {
+  drawArm(gfx, -3, -4, -4, -3);
+  drawArm(gfx,  2, -4,  3, -3);
 }
 
 /**
- * Arms spread wide horizontally (surprised).
+ * Arms spread wide horizontally (surprised emotion).
+ *
  * @param {PIXI.Graphics} gfx
- * @param {number} yArm
  */
-function drawArmsWide(gfx, yArm) {
-  drawPx(gfx, -2 * P, yArm);
-  drawPx(gfx, -3 * P, yArm);
-  drawPx(gfx,      P, yArm);
-  drawPx(gfx,  2 * P, yArm);
+function drawArmsWide(gfx) {
+  drawArm(gfx, -3, -4, -4, -4);
+  drawArm(gfx,  2, -4,  3, -4);
 }
 
 /**
- * Both arms raised (joyful celebrating pose).
+ * Both arms raised high (joyful / celebrating).
+ *
  * @param {PIXI.Graphics} gfx
- * @param {number} yArm
  */
-function drawArmsUp(gfx, yArm) {
-  drawPx(gfx, -2 * P, yArm - P);
-  drawPx(gfx, -3 * P, yArm - 2 * P);
-  drawPx(gfx,      P, yArm - P);
-  drawPx(gfx,  2 * P, yArm - 2 * P);
+function drawArmsUp(gfx) {
+  drawArm(gfx, -3, -5, -4, -6);
+  drawArm(gfx,  2, -5,  3, -6);
 }
 
 /**
- * Dodger play pose: right arm raised high (triumphant dribble/shot), left arm down.
+ * Dodger play pose: right arm raised high, left arm down.
+ *
  * @param {PIXI.Graphics} gfx
- * @param {number} yArm
  */
-function drawArmsPlayDodger(gfx, yArm) {
-  drawPx(gfx, -2 * P, yArm);           // left upper arm (down)
-  drawPx(gfx, -3 * P, yArm + P);       // left forearm
-  drawPx(gfx,      P, yArm - P);       // right upper arm (raised)
-  drawPx(gfx,  2 * P, yArm - 2 * P);  // right forearm (high)
+function drawArmsPlayDodger(gfx) {
+  drawArm(gfx, -3, -4, -4, -3);
+  drawArm(gfx,  2, -5,  3, -6);
 }
 
 /**
- * Whip play pose: left arm raised high (lasso throw), right arm down.
+ * Whip play pose: left arm raised high, right arm down.
+ *
  * @param {PIXI.Graphics} gfx
- * @param {number} yArm
  */
-function drawArmsPlayWhip(gfx, yArm) {
-  drawPx(gfx, -2 * P, yArm - P);       // left upper arm (raised)
-  drawPx(gfx, -3 * P, yArm - 2 * P);  // left forearm (high)
-  drawPx(gfx,      P, yArm);           // right upper arm (down)
-  drawPx(gfx,  2 * P, yArm + P);       // right forearm
+function drawArmsPlayWhip(gfx) {
+  drawArm(gfx, -3, -5, -4, -6);
+  drawArm(gfx,  2, -4,  3, -3);
 }
 
 /**
- * Curious pose: left arm down, right arm extended forward/horizontal (peeking).
+ * Curious pose: right arm extended horizontally (shielding eyes / pointing).
+ *
  * @param {PIXI.Graphics} gfx
- * @param {number} yArm
  */
-function drawArmsCurieux(gfx, yArm) {
-  drawPx(gfx, -2 * P, yArm);           // left upper arm (down)
-  drawPx(gfx, -3 * P, yArm + P);       // left forearm
-  drawPx(gfx,      P, yArm);           // right upper arm
-  drawPx(gfx,  2 * P, yArm);           // right forearm (horizontal — shielding eyes)
+function drawArmsCurious(gfx) {
+  drawArm(gfx, -3, -4, -4, -3);
+  drawArm(gfx,  2, -4,  3, -4);
 }
 
 /**
- * Selects and draws the correct arm pose based on emotion and character.
+ * Selects and draws the correct arm pose for the given emotion and character.
+ *
  * @param {PIXI.Graphics} gfx
- * @param {string} emotion
- * @param {string} character
- * @param {number} yArm
+ * @param {string} emotion   - Emotion key driving the pose choice
+ * @param {string} character - 'Dodger' | 'Whip' (used for joyeux split)
  */
-function drawArms(gfx, emotion, character, yArm) {
+function drawArms(gfx, emotion, character) {
   switch (emotion) {
-    case "surpris":
-      drawArmsWide(gfx, yArm);
-      break;
-    case "joyeux":
-      if (character === "Dodger") {
-        drawArmsPlayDodger(gfx, yArm);
-      } else {
-        drawArmsPlayWhip(gfx, yArm);
-      }
-      break;
-    case "curieux":
-      drawArmsCurieux(gfx, yArm);
-      break;
-    default:
-      drawArmsDown(gfx, yArm);
+    case "surpris": return drawArmsWide(gfx);
+    case "joyeux":  return character === "Dodger" ? drawArmsPlayDodger(gfx) : drawArmsPlayWhip(gfx);
+    case "curieux": return drawArmsCurious(gfx);
+    default:        return drawArmsDown(gfx);
   }
 }
 
 // ─── Prop icons ───────────────────────────────────────────────────────────────
 
-/** Pixel size used for prop icons (smaller than stickman P for visual balance). */
+/** Pixel size for prop icons (drawn in body-container coords, not grid units). */
 const PP = 2;
 
 /**
- * Draws a pixel-art basketball for Dodger.
- * Positioned around (0, 22) in body-container coords.
+ * Draws a pixel-art basketball for Dodger, centred near (0, 22) in body coords.
+ *
  * @param {PIXI.Graphics} gfx
  */
 function drawBall(gfx) {
-  const cx = 0;
-  const cy = 22;
-  // Diamond/ball outline (filled):
-  //   . X X .
-  //   X X X X
-  //   X X X X
-  //   . X X .
-  gfx.drawRect(cx - PP,      cy - 2 * PP, 2 * PP, PP);   // top
-  gfx.drawRect(cx - 2 * PP, cy - PP,     4 * PP, PP);    // upper band
-  gfx.drawRect(cx - 2 * PP, cy,          4 * PP, PP);    // lower band
-  gfx.drawRect(cx - PP,      cy + PP,    2 * PP, PP);    // bottom
+  const cx = 0, cy = 22;
+  gfx.drawRect(cx - PP,      cy - 2 * PP, 2 * PP, PP);
+  gfx.drawRect(cx - 2 * PP, cy - PP,     4 * PP, PP);
+  gfx.drawRect(cx - 2 * PP, cy,          4 * PP, PP);
+  gfx.drawRect(cx - PP,      cy + PP,    2 * PP, PP);
 }
 
 /**
- * Draws a pixel-art lasso coil for Whip.
- * Positioned around (0, 20) in body-container coords.
+ * Draws a pixel-art lasso coil for Whip, centred near (0, 20) in body coords.
+ *
  * @param {PIXI.Graphics} gfx
  */
 function drawRope(gfx) {
-  const cx = 0;
-  const cy = 20;
-  // Oval coil:
-  gfx.drawRect(cx - 3 * PP, cy,          6 * PP, PP);    // top arc
-  gfx.drawRect(cx - 4 * PP, cy + PP,     PP,     2 * PP); // left side
-  gfx.drawRect(cx + 3 * PP, cy + PP,     PP,     2 * PP); // right side
-  gfx.drawRect(cx - 3 * PP, cy + 3 * PP, 6 * PP, PP);    // bottom arc
-  // rope stem going up from the coil
-  gfx.drawRect(cx + PP,     cy - 3 * PP, PP,     3 * PP); // vertical tail
+  const cx = 0, cy = 20;
+  gfx.drawRect(cx - 3 * PP, cy,          6 * PP, PP);
+  gfx.drawRect(cx - 4 * PP, cy + PP,     PP,     2 * PP);
+  gfx.drawRect(cx + 3 * PP, cy + PP,     PP,     2 * PP);
+  gfx.drawRect(cx - 3 * PP, cy + 3 * PP, 6 * PP, PP);
+  gfx.drawRect(cx + PP,     cy - 3 * PP, PP,     3 * PP);
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
  * Draws the complete pixel-art stickman onto the given PIXI Graphics object.
- * The graphics object should be cleared by the caller before this call.
+ * The caller must clear the graphics object before calling this function.
  *
- * @param {PIXI.Graphics} gfx    - The figure Graphics object (local coords)
+ * Assembles: head → neck → torso → arms (pose-dependent) → legs → feet.
+ *
+ * @param {PIXI.Graphics} gfx    - Figure Graphics object (figure-local coords)
  * @param {string} emotion       - 'happy' | 'surpris' | 'joyeux' | 'curieux' | 'désorienté'
  * @param {string} character     - 'Dodger' | 'Whip'
  */
@@ -232,31 +248,29 @@ export function drawStickman(gfx, emotion, character) {
   gfx.lineStyle(0);
   gfx.beginFill(0x000000, 1);
 
-  drawHead(gfx, HEAD_TOP);
-  drawBody(gfx, BODY_TOP);
-  drawArms(gfx, emotion, character, BODY_TOP);
-  drawLegs(gfx, LEGS_TOP);
+  drawHead(gfx);
+  drawNeck(gfx);
+  drawTorso(gfx);
+  drawArms(gfx, emotion, character);
+  drawLegs(gfx);
 
   gfx.endFill();
 }
 
 /**
  * Draws the character's prop icon at the bottom of the LCD screen area.
- * The graphics object should be cleared by the caller before this call.
- * Props are always shown regardless of emotion.
+ * The caller must clear the graphics object before calling this function.
+ * Props are drawn regardless of emotion.
  *
- * @param {PIXI.Graphics} gfx  - The prop Graphics object (body-container coords)
+ * @param {PIXI.Graphics} gfx  - Prop Graphics object (body-container coords)
  * @param {string} character   - 'Dodger' | 'Whip'
  */
 export function drawProp(gfx, character) {
   gfx.lineStyle(0);
   gfx.beginFill(0x000000, 1);
 
-  if (character === "Dodger") {
-    drawBall(gfx);
-  } else {
-    drawRope(gfx);
-  }
+  if (character === "Dodger") drawBall(gfx);
+  else drawRope(gfx);
 
   gfx.endFill();
 }
