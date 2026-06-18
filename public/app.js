@@ -1,11 +1,11 @@
-import { bindControls, getDomRefs, setSelfBadge } from "./js/dom.js";
+import { bindControls, getDomRefs, setSelfBadge, updateDirectionButtons } from "./js/dom.js";
 import { createScene } from "./js/scene/index.js";
 
 const socket = io();
 const dom = getDomRefs();
 const scene = createScene(dom);
 
-bindControls({ socket, targetInput: dom.targetInput, directionSelect: dom.directionSelect });
+bindControls({ socket, targetInput: dom.targetInput, directionButtons: dom.directionButtons });
 
 socket.on("connect", () => {
   scene.setMyCubeId(socket.id);
@@ -14,6 +14,11 @@ socket.on("connect", () => {
 
 socket.on("world:update", (state) => {
   scene.handleWorldUpdate(state);
+  // Rafraîchit les boutons de direction si une cible est déjà sélectionnée.
+  const targetId = dom.targetInput.value.trim();
+  if (targetId) {
+    updateDirectionButtons(dom.directionButtons, state.cubes, targetId);
+  }
 });
 
 scene.setup();

@@ -10,7 +10,7 @@
 
 Cubematel est une recréation web temps réel du jouet **Cube World de Mattel** (2004).
 Chaque joueur connecté reçoit un cube LCD animé contenant un personnage pixel art.
-Les cubes peuvent être reliés entre eux (horizontalement ou verticalement).
+Les cubes peuvent être reliés entre eux — un joueur se déplace vers un cube cible en choisissant une face disponible (au-dessus, en dessous, à gauche, à droite).
 Le serveur est la seule source de vérité — le client ne mute jamais l'état localement.
 
 **Stack :**
@@ -99,7 +99,7 @@ vitest.config.mjs          # Configuration Vitest (environment: node)
 |----------------|-------------------|------------------------------------|--------------------------------------------|
 | Serveur→Client | `world:update`    | `{ cubes, history }`               | Snapshot complet du monde                  |
 | Client→Serveur | `cube:move`       | `{ movement }` (shake/flip/tilt/play) | Met à jour émotion + activité du cube   |
-| Client→Serveur | `cubes:connect`   | `{ targetId, direction }`          | Place le cube cible adjacent au source     |
+| Client→Serveur | `cubes:connect`   | `{ targetId, direction }` (`"above"/"below"/"left"/"right"`) | Déplace le joueur sur la face indiquée du cube cible |
 | (auto)         | `connect`         | —                                  | Crée un cube pour le nouveau socket        |
 | (auto)         | `disconnect`      | —                                  | Supprime le cube et recalcule les liens    |
 
@@ -109,10 +109,11 @@ vitest.config.mjs          # Configuration Vitest (environment: node)
 
 1. Chaque joueur possède exactement un cube, identifié par son `socket.id`.
 2. Deux cubes sont voisins uniquement s'ils sont **adjacents orthogonalement** (Δx=1,Δy=0 ou Δx=0,Δy=1).
-3. Une face ne peut accueillir qu'un seul voisin — `placeConnectedCube` cherche la première case libre dans l'axe demandé.
-4. La couleur est choisie aléatoirement parmi les couleurs non encore utilisées.
-5. `_syncConnections` reconstruit `connectedTo` depuis les coordonnées à chaque mutation.
-6. L'historique public est limité aux **20 dernières entrées**.
+3. Lors d'une connexion, c'est le **joueur (source) qui se déplace** vers la face choisie du cube cible — la cible reste immobile.
+4. Une face est indisponible si une autre cube l'occupe déjà ; l'UI désactive ces faces automatiquement depuis l'état monde reçu.
+5. La couleur est choisie aléatoirement parmi les couleurs non encore utilisées.
+6. `_syncConnections` reconstruit `connectedTo` depuis les coordonnées à chaque mutation.
+7. L'historique public est limité aux **20 dernières entrées**.
 
 ---
 

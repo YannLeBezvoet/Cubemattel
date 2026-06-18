@@ -49,11 +49,11 @@ import { drawStickman, drawProp } from "./stickman.js";
 /**
  * Creates a new cube node and wires up its click handler.
  *
- * @param {string} id           - Unique cube identifier
- * @param {HTMLInputElement} targetInput - Input to fill when the node is tapped
+ * @param {string} id       - Unique cube identifier
+ * @param {(id: string) => void} onSelect - Called with the cube id when tapped
  * @returns {CubeNode}
  */
-export function createCubeNode(id, targetInput) {
+export function createCubeNode(id, onSelect) {
   const PIXI = window.PIXI;
   const container = new PIXI.Container();
   const cubeShape = new PIXI.Graphics();
@@ -83,10 +83,7 @@ export function createCubeNode(id, targetInput) {
   container.addChild(body, label, mood);
   container.eventMode = "static";
   container.cursor = "pointer";
-  container.on("pointertap", () => {
-    targetInput.value = id;
-    targetInput.focus();
-  });
+  container.on("pointertap", () => onSelect(id));
 
   return {
     id,

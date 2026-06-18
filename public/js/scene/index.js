@@ -16,6 +16,7 @@ import { renderWorld } from "./world.js";
 export function createScene({
   cubeScene,
   targetInput,
+  directionButtons,
   cubeCount,
   linkCount,
   historyList,
@@ -56,7 +57,7 @@ export function createScene({
         return;
       }
       try {
-        renderWorld(sceneState, state, { targetInput, cubeCount, linkCount, historyList });
+        renderWorld(sceneState, state, { targetInput, directionButtons, cubeCount, linkCount, historyList });
       } catch (error) {
         console.error("Erreur lors de world:update", error);
         showSceneError(sceneState, cubeScene, "Erreur lors de la mise a jour de la scène.");

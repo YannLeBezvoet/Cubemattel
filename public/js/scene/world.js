@@ -14,7 +14,7 @@
  */
 
 import { createCubeNode, drawCube } from "../renderers/cube-node.js";
-import { renderHistory, updateCounters } from "../dom.js";
+import { renderHistory, updateCounters, updateDirectionButtons } from "../dom.js";
 
 /**
  * @typedef {import('../renderers/cube-node.js').Cube} Cube
@@ -48,7 +48,7 @@ import { renderHistory, updateCounters } from "../dom.js";
  *
  * @param {SceneState} sceneState
  * @param {{ cubes: Cube[], history: object[] }} state
- * @param {{ targetInput: HTMLInputElement, cubeCount: HTMLElement, linkCount: HTMLElement, historyList: HTMLElement }} refs
+ * @param {{ targetInput: HTMLInputElement, directionButtons: HTMLButtonElement[], cubeCount: HTMLElement, linkCount: HTMLElement, historyList: HTMLElement }} refs
  */
 export function renderWorld(sceneState, state, refs) {
   sceneState.latestWorld = state;
@@ -68,7 +68,7 @@ export function renderWorld(sceneState, state, refs) {
     linkTotal: uniqueLinks.size,
   });
   renderHistory(refs.historyList, state.history || []);
-  syncCubes(sceneState, cubes, refs.targetInput);
+  syncCubes(sceneState, cubes, refs);
   layoutCubes(sceneState, cubes);
 
   cubes.forEach((cube) => {
@@ -133,17 +133,23 @@ function collectUniqueLinks(cubes) {
 
 /**
  * Creates missing cube nodes and removes nodes for cubes no longer in the state.
+ * The onSelect callback fills the target input and refreshes direction buttons.
  *
  * @param {SceneState} sceneState
  * @param {Cube[]} cubes
- * @param {HTMLInputElement} targetInput
+ * @param {{ targetInput: HTMLInputElement, directionButtons: HTMLButtonElement[] }} refs
  */
-function syncCubes(sceneState, cubes, targetInput) {
+function syncCubes(sceneState, cubes, refs) {
   const existingIds = new Set(sceneState.cubeNodes.keys());
 
   cubes.forEach((cube) => {
     if (!sceneState.cubeNodes.has(cube.id)) {
-      const node = createCubeNode(cube.id, targetInput);
+      const onSelect = (id) => {
+        refs.targetInput.value = id;
+        refs.targetInput.focus();
+        updateDirectionButtons(refs.directionButtons, sceneState.latestWorld?.cubes ?? [], id);
+      };
+      const node = createCubeNode(cube.id, onSelect);
       sceneState.cubeNodes.set(cube.id, node);
       sceneState.cubeLayer.addChild(node.container);
     }
