@@ -37,6 +37,8 @@ import { renderHistory, updateCounters, updateDirectionButtons } from "../dom.js
  * @property {number} cameraY
  * @property {boolean} ready
  * @property {object | null} latestWorld
+ * @property {number} originX - Coordonnée monde X fixée à la première vue ; ne suit pas les mouvements du joueur
+ * @property {number} originY - Coordonnée monde Y fixée à la première vue ; ne suit pas les mouvements du joueur
  * @property {object | null} dragState
  * @property {ResizeObserver | null} resizeObserver
  */
@@ -178,9 +180,19 @@ function layoutCubes(sceneState, cubes) {
   const centerY = height / 2;
   const gapX = 80;
   const gapY = 80;
-  const myCube = cubes.find((cube) => cube.id === sceneState.myCubeId);
-  const originX = Number.isFinite(myCube?.x) ? myCube?.x ?? 0 : 0;
-  const originY = Number.isFinite(myCube?.y) ? myCube?.y ?? 0 : 0;
+
+  // L'origine est fixée une seule fois depuis la position initiale du joueur.
+  // Elle ne suit pas les déplacements — seul le pan manuel déplace la caméra.
+  if (!Number.isFinite(sceneState.originX)) {
+    const myCube = cubes.find((cube) => cube.id === sceneState.myCubeId);
+    if (Number.isFinite(myCube?.x)) {
+      sceneState.originX = myCube.x;
+      sceneState.originY = myCube.y;
+    }
+  }
+
+  const originX = Number.isFinite(sceneState.originX) ? sceneState.originX : 0;
+  const originY = Number.isFinite(sceneState.originY) ? sceneState.originY : 0;
 
   cubes.forEach((cube, index) => {
     const node = sceneState.cubeNodes.get(cube.id);

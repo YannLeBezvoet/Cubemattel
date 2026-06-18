@@ -33,6 +33,8 @@ export function createScene({
     stars: [],
     floaters: [],
     latestWorld: { cubes: [], history: [] },
+    originX: NaN,
+    originY: NaN,
     ready: false,
     resizeObserver: null,
     hasFatalError: false,
