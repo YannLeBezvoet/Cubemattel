@@ -5,7 +5,7 @@ const { pickRandomAvailableColor } = require("./colors");
 const {
   ensureAllCoordinates,
   findFirstFreeCoordinate,
-  placeConnectedCube,
+  moveSourceToTarget,
 } = require("./coordinates");
 
 /**
@@ -100,11 +100,12 @@ class CubeWorldGame {
   }
 
   /**
-   * Forces a connection between two cubes if a valid slot is available.
+   * Déplace le cube source (joueur) pour le coller sur une face du cube cible.
+   * La face doit être libre ; si elle est occupée, la connexion est refusée.
    *
    * @param {string} sourceId
    * @param {string} targetId
-   * @param {"horizontal" | "vertical"} direction
+   * @param {"above" | "below" | "left" | "right"} direction - Face du cube cible visée
    */
   connectCubes(sourceId, targetId, direction) {
     if (sourceId === targetId || !this.cubes.has(sourceId) || !this.cubes.has(targetId)) {
@@ -112,8 +113,8 @@ class CubeWorldGame {
     }
 
     ensureAllCoordinates(this.cubes);
-    const connected = placeConnectedCube(this.cubes, sourceId, targetId, direction);
-    if (!connected) {
+    const moved = moveSourceToTarget(this.cubes, sourceId, targetId, direction);
+    if (!moved) {
       return;
     }
 
@@ -124,9 +125,9 @@ class CubeWorldGame {
       return;
     }
 
-    const orientation = direction === "vertical" ? "verticalement" : "horizontalement";
+    const directionFr = { above: "au-dessus", below: "en dessous", left: "à gauche", right: "à droite" }[direction] ?? direction;
     this._record(
-      `${source.character} et ${target.character} relient leurs cubes ${orientation} et discutent ensemble.`
+      `${source.character} va se coller ${directionFr} du cube de ${target.character} et discutent ensemble.`
     );
     this._recordInteractions(sourceId, targetId);
   }

@@ -3,6 +3,9 @@
  * @description Unit tests for CubeWorldGame — server-side game logic.
  *
  * Covers: movements, connections, colour assignment, and face constraints.
+ *
+ * Sémantique de connexion : le cube SOURCE (joueur) se déplace pour se coller
+ * sur la face indiquée du cube CIBLE. La cible reste immobile.
  */
 
 import { test, expect } from "vitest";
@@ -21,19 +24,21 @@ test("un cube réagit aux mouvements", () => {
   expect(cube.orientation).toBe("upside_down");
 });
 
-test("deux cubes connectés peuvent interagir", () => {
+test("le joueur se déplace vers le cube cible pour se connecter", () => {
   const game = new CubeWorldGame();
   game.createCube("a", "Alice", "Dodger");
   game.createCube("b", "Bob", "Whip");
 
-  game.connectCubes("a", "b", "horizontal");
+  // A se colle à droite de B (A se déplace, B reste en place)
+  game.connectCubes("a", "b", "right");
   const state = game.getState();
   const cubeA = state.cubes.find((cube) => cube.id === "a");
   const cubeB = state.cubes.find((cube) => cube.id === "b");
 
   expect(cubeA.connectedTo).toEqual(["b"]);
-  expect(cubeB.y).toBe(cubeA.y);
-  expect(Math.abs(cubeB.x - cubeA.x)).toBe(1);
+  // A est maintenant à droite de B
+  expect(cubeA.y).toBe(cubeB.y);
+  expect(cubeA.x).toBe(cubeB.x + 1);
   expect(state.history.some((entry) => entry.text.includes("discutent ensemble"))).toBe(true);
 });
 
@@ -53,21 +58,37 @@ test("chaque cube reçoit une couleur aléatoire différente", () => {
   expect(CUBE_COLORS.includes(cubeB.color)).toBe(true);
 });
 
-test("une connexion verticale place le cube au dessus ou en dessous", () => {
+test("la direction 'below' place le joueur en dessous du cube cible", () => {
   const game = new CubeWorldGame();
   game.createCube("a", "Alice", "Dodger");
   game.createCube("b", "Bob", "Whip");
 
-  game.connectCubes("a", "b", "vertical");
+  // A se colle en dessous de B
+  game.connectCubes("a", "b", "below");
   const state = game.getState();
   const cubeA = state.cubes.find((cube) => cube.id === "a");
   const cubeB = state.cubes.find((cube) => cube.id === "b");
 
-  expect(cubeB.x).toBe(cubeA.x);
-  expect(Math.abs(cubeB.y - cubeA.y)).toBe(1);
+  expect(cubeA.x).toBe(cubeB.x);
+  expect(cubeA.y).toBe(cubeB.y + 1);
 });
 
-test("une connexion verticale réaligne aussi des cubes sans coordonnées", () => {
+test("la direction 'above' place le joueur au-dessus du cube cible", () => {
+  const game = new CubeWorldGame();
+  game.createCube("a", "Alice", "Dodger");
+  game.createCube("b", "Bob", "Whip");
+
+  // A se colle au-dessus de B
+  game.connectCubes("a", "b", "above");
+  const state = game.getState();
+  const cubeA = state.cubes.find((cube) => cube.id === "a");
+  const cubeB = state.cubes.find((cube) => cube.id === "b");
+
+  expect(cubeA.x).toBe(cubeB.x);
+  expect(cubeA.y).toBe(cubeB.y - 1);
+});
+
+test("une connexion réaligne aussi des cubes sans coordonnées", () => {
   const game = new CubeWorldGame();
   game.createCube("a", "Alice", "Dodger");
   game.createCube("b", "Bob", "Whip");
@@ -78,31 +99,33 @@ test("une connexion verticale réaligne aussi des cubes sans coordonnées", () =
   delete cubeB.x;
   delete cubeB.y;
 
-  game.connectCubes("a", "b", "vertical");
+  // A se colle en dessous de B, les deux sans coordonnées au départ
+  game.connectCubes("a", "b", "below");
   const state = game.getState();
   const alignedA = state.cubes.find((cube) => cube.id === "a");
   const alignedB = state.cubes.find((cube) => cube.id === "b");
 
-  expect(alignedB.x).toBe(alignedA.x);
-  expect(Math.abs(alignedB.y - alignedA.y)).toBe(1);
+  expect(alignedA.x).toBe(alignedB.x);
+  expect(alignedA.y).toBe(alignedB.y + 1);
 });
 
-test("chaque face d'un cube n'accepte qu'un seul voisin", () => {
+test("une face occupée du cube cible refuse la connexion", () => {
   const game = new CubeWorldGame();
-  game.createCube("a", "Alice", "Dodger");
-  game.createCube("b", "Bob", "Whip");
-  game.createCube("c", "Chloé", "Dodger");
-  game.createCube("d", "David", "Whip");
+  game.createCube("a", "Alice", "Dodger"); // cible
+  game.createCube("b", "Bob", "Whip");     // occupe la face droite de a
+  game.createCube("c", "Chloé", "Dodger"); // essaie aussi la face droite de a
 
-  game.connectCubes("a", "b", "horizontal");
-  game.connectCubes("a", "c", "horizontal");
-  game.connectCubes("a", "d", "horizontal");
+  // B se colle à droite de A
+  game.connectCubes("b", "a", "right");
+  // C essaie la même face → refusé car déjà occupée par B
+  game.connectCubes("c", "a", "right");
 
   const state = game.getState();
   const cubeA = state.cubes.find((cube) => cube.id === "a");
-  const cubeD = state.cubes.find((cube) => cube.id === "d");
+  const cubeC = state.cubes.find((cube) => cube.id === "c");
 
-  expect(cubeA.connectedTo.length).toBe(2);
-  expect(cubeA.connectedTo.includes("d")).toBe(false);
-  expect(Math.abs(cubeD.x - cubeA.x) + Math.abs(cubeD.y - cubeA.y)).not.toBe(1);
+  // A n'est pas connecté à C
+  expect(cubeA.connectedTo).not.toContain("c");
+  // C n'est pas adjacent à A
+  expect(Math.abs(cubeC.x - cubeA.x) + Math.abs(cubeC.y - cubeA.y)).not.toBe(1);
 });

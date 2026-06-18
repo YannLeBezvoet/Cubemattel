@@ -43,17 +43,18 @@
           </section>
 
           <section class="panel">
-            <h2>Connecter deux cubes</h2>
+            <h2>Se connecter à un cube</h2>
             <div class="control-group">
               <input id="targetId" placeholder="ID complet du cube cible" />
-              <select id="direction">
-                <option value="horizontal">Horizontal</option>
-                <option value="vertical">Vertical</option>
-              </select>
-              <button id="connectBtn">Connecter</button>
+              <div class="direction-grid">
+                <button class="dir-btn" data-dir="above" disabled>Au-dessus</button>
+                <button class="dir-btn" data-dir="below" disabled>En dessous</button>
+                <button class="dir-btn" data-dir="left" disabled>À gauche</button>
+                <button class="dir-btn" data-dir="right" disabled>À droite</button>
+              </div>
               <p class="hint">
-                Astuce : clique sur « Connecter » depuis une carte de cube pour remplir
-                automatiquement la cible.
+                Clique sur un cube dans la scène pour le choisir comme cible,
+                puis sélectionne une face disponible.
               </p>
             </div>
           </section>
