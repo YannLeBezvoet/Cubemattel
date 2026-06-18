@@ -1,6 +1,17 @@
-import { showSceneError } from "./scene-errors.js";
-import { setupScene } from "./scene-setup.js";
-import { renderWorld } from "./scene-world.js";
+/**
+ * @file scene/index.js
+ * @description Entry point for the 2D cube scene.
+ *
+ * Exposes `createScene`, the factory that wires together setup, rendering and
+ * world-update handling. Consumers only need this module — the sub-modules
+ * (setup, animation, pan, world, errors, background) are internal to the scene.
+ *
+ * @dependencies scene/setup.js, scene/world.js, scene/errors.js
+ */
+
+import { showSceneError } from "./errors.js";
+import { setupScene } from "./setup.js";
+import { renderWorld } from "./world.js";
 
 export function createScene({
   cubeScene,

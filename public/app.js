@@ -1,5 +1,5 @@
 import { bindControls, getDomRefs, setSelfBadge } from "./js/dom.js";
-import { createScene } from "./js/scene.js";
+import { createScene } from "./js/scene/index.js";
 
 const socket = io();
 const dom = getDomRefs();

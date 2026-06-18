@@ -1,5 +1,16 @@
-import { createCubeNode, drawCube } from "./cube-node.js";
-import { renderHistory, updateCounters } from "./dom.js";
+/**
+ * @file scene/world.js
+ * @description Synchronises the server snapshot with the live PixiJS scene.
+ *
+ * On each `world:update` event, creates or removes cube nodes, positions them
+ * in the viewport relative to the local player's cube, and triggers redraws or
+ * flip animations when orientation changes.
+ *
+ * @dependencies renderers/cube-node.js, dom.js
+ */
+
+import { createCubeNode, drawCube } from "../renderers/cube-node.js";
+import { renderHistory, updateCounters } from "../dom.js";
 
 // Synchronise l'état serveur avec les nodes Pixi déjà en mémoire.
 export function renderWorld(sceneState, state, refs) {

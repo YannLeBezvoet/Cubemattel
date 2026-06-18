@@ -1,3 +1,13 @@
+/**
+ * @file scene/background.js
+ * @description Animated background layer: drifting stars and floating particles.
+ *
+ * `buildBackground` rebuilds the entire layer (call on init and resize).
+ * `updateBackground` moves sprites each frame — called by scene/animation.js.
+ *
+ * No project-level imports — reads/writes sceneState and window.PIXI directly.
+ */
+
 export function buildBackground(sceneState) {
   const PIXI = window.PIXI;
   const width = sceneState.app.screen.width;

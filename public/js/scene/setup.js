@@ -1,8 +1,20 @@
+/**
+ * @file scene/setup.js
+ * @description PixiJS initialisation and scene lifecycle management.
+ *
+ * Creates the PixiJS Application, builds the layer stack (background, links,
+ * cubes, pan overlay), wires the animation ticker and the resize observer.
+ * Called once at startup; subsequent world updates go through scene/world.js.
+ *
+ * @dependencies scene/background.js, scene/animation.js, scene/errors.js,
+ *               scene/world.js, scene/pan.js
+ */
+
 import { buildBackground } from "./background.js";
-import { animate } from "./scene-animation.js";
-import { showSceneError } from "./scene-errors.js";
-import { renderWorld } from "./scene-world.js";
-import { applyCameraTransform, setupPanInteractions, updatePanOverlay } from "./scene-pan.js";
+import { animate } from "./animation.js";
+import { showSceneError } from "./errors.js";
+import { renderWorld } from "./world.js";
+import { applyCameraTransform, setupPanInteractions, updatePanOverlay } from "./pan.js";
 
 export function setupScene(sceneState, refs) {
   const { cubeScene } = refs;

@@ -12,7 +12,7 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
-import { drawStickman, drawProp } from "../public/js/stickman.js";
+import { drawStickman, drawProp } from "../public/js/renderers/stickman.js";
 
 // ─── PIXI.Graphics mock ───────────────────────────────────────────────────────
 

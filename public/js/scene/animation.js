@@ -1,5 +1,16 @@
+/**
+ * @file scene/animation.js
+ * @description Per-frame animation loop for the cube scene.
+ *
+ * Handles floating/bobbing of unconnected cubes, flip animations triggered by
+ * orientation changes, and delegates background particle updates to background.js.
+ * Called every tick by the PixiJS ticker set up in scene/setup.js.
+ *
+ * @dependencies scene/background.js, renderers/cube-node.js
+ */
+
 import { updateBackground } from "./background.js";
-import { drawCube } from "./cube-node.js";
+import { drawCube } from "../renderers/cube-node.js";
 
 const FLIP_SPEED = 0.04;
 

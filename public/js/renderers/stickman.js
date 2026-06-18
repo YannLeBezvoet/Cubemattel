@@ -1,5 +1,5 @@
 /**
- * @file stickman.js
+ * @file renderers/stickman.js
  * @description Pixel-art stickman renderer for the Cubematel LCD game aesthetic.
  *
  * Draws stickman figures and character prop icons using PIXI.js Graphics.
@@ -16,7 +16,7 @@
  *   - Total figure: 11 grid-row span × P = 36 display px tall.
  *   - Total figure: 8 grid-col span × P = 24 display px wide (with arms).
  *
- * Gravity positioning (managed by cube-node.js, not this file):
+ * Gravity positioning (managed by renderers/cube-node.js, not this file):
  *   - Normal (upright): figure.y = 18 → feet-bottom at body y=30 (LCD bottom edge y=32).
  *   - Upside_down:      figure.y = -19, scale.y=-1 → feet at body y=-31 (LCD top edge y=-33).
  *
