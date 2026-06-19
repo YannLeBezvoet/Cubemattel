@@ -57,6 +57,7 @@ import { applyCameraTransform } from "./pan.js";
  * @property {ResizeObserver | null} resizeObserver
  * @property {boolean} hasFatalError
  * @property {boolean} shouldCenterOnPlayer - When true, the next world update resets the camera to center on the player
+ * @property {number} zoom - Camera zoom level (1 = 100%, 0.5 = 50%, 2 = 200%)
  */
 
 /**

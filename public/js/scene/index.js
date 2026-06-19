@@ -52,6 +52,7 @@ export function createScene({
     myCubeId: "",
     cameraX: 0,
     cameraY: 0,
+    zoom: 1,
     dragState: null,
     shouldCenterOnPlayer: false,
   };

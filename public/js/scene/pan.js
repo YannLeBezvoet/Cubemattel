@@ -1,11 +1,13 @@
 // @ts-check
 /**
  * @file scene/pan.js
- * @description Camera pan interactions for the cube scene.
+ * @description Camera pan and zoom interactions for the cube scene.
  *
  * Wires pointer events onto the transparent pan overlay so the user can
- * click-drag to scroll the world. Also exports helpers to reposition the
- * overlay and apply the camera offset to the scene layers.
+ * click-drag to scroll the world. Wires the wheel event on the canvas so the
+ * user can zoom in/out centered on the mouse cursor. Also exports helpers to
+ * reposition the overlay and apply the camera transform (offset + zoom) to the
+ * scene layers.
  *
  * No project-level imports — only reads/writes sceneState and window.PIXI.
  *
@@ -76,6 +78,28 @@ export function setupPanInteractions(sceneState) {
     dragState.pointerId = null;
   };
 
+  const onWheel = (/** @type {WheelEvent} */ event) => {
+    event.preventDefault();
+    const ZOOM_FACTOR = 1.1;
+    const scaleFactor = event.deltaY < 0 ? ZOOM_FACTOR : 1 / ZOOM_FACTOR;
+    const MIN_ZOOM = 0.1;
+    const MAX_ZOOM = 5;
+
+    const oldZoom = sceneState.zoom ?? 1;
+    const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, oldZoom * scaleFactor));
+    const effectiveScale = newZoom / oldZoom;
+
+    const canvas = sceneState.app.canvas;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
+
+    sceneState.zoom = newZoom;
+    sceneState.cameraX = mouseX - (mouseX - sceneState.cameraX) * effectiveScale;
+    sceneState.cameraY = mouseY - (mouseY - sceneState.cameraY) * effectiveScale;
+    applyCameraTransform(sceneState);
+  };
+
   sceneState.panOverlay.eventMode = "static";
   sceneState.panOverlay.cursor = "grab";
   sceneState.panOverlay.on("pointerdown", onPointerDown);
@@ -86,6 +110,7 @@ export function setupPanInteractions(sceneState) {
   window.addEventListener("pointermove", onPointerMove, { passive: false });
   window.addEventListener("pointerup", endDrag);
   window.addEventListener("pointercancel", endDrag);
+  sceneState.app.canvas.addEventListener("wheel", onWheel, { passive: false });
 }
 
 /**
@@ -107,7 +132,7 @@ export function updatePanOverlay(sceneState) {
 }
 
 /**
- * Applies the current camera offset to links and cube layers.
+ * Applies the current camera offset and zoom level to links and cube layers.
  * The background layer is kept at (0, 0) to remain fixed.
  *
  * @param {SceneState} sceneState
@@ -120,8 +145,11 @@ export function applyCameraTransform(sceneState) {
   if (sceneState.backgroundLayer) {
     sceneState.backgroundLayer.position.set(0, 0);
   }
+  const zoom = sceneState.zoom ?? 1;
   sceneState.linksLayer.position.set(sceneState.cameraX, sceneState.cameraY);
+  sceneState.linksLayer.scale.set(zoom);
   sceneState.cubeLayer.position.set(sceneState.cameraX, sceneState.cameraY);
+  sceneState.cubeLayer.scale.set(zoom);
 }
 
 /**
