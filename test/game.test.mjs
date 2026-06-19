@@ -109,6 +109,26 @@ test("une connexion réaligne aussi des cubes sans coordonnées", () => {
   expect(alignedA.y).toBe(alignedB.y + 1);
 });
 
+test("new cubes spawn with no face or corner contact with any existing cube", () => {
+  const game = new CubeWorldGame();
+  game.createCube("a", "Alice", "Dodger");
+  game.createCube("b", "Bob", "Whip");
+  game.createCube("c", "Chloé", "Dodger");
+
+  const { cubes } = game.getState();
+
+  for (let i = 0; i < cubes.length; i++) {
+    for (let j = i + 1; j < cubes.length; j++) {
+      const ca = cubes[i];
+      const cb = cubes[j];
+      const dx = Math.abs(ca.x - cb.x);
+      const dy = Math.abs(ca.y - cb.y);
+      // Must not touch on any face (dx+dy===1) or on any corner (dx===1 && dy===1)
+      expect(dx <= 1 && dy <= 1).toBe(false);
+    }
+  }
+});
+
 test("une face occupée du cube cible refuse la connexion", () => {
   const game = new CubeWorldGame();
   game.createCube("a", "Alice", "Dodger"); // cible
