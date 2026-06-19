@@ -13,9 +13,9 @@
  * Coordinate system (grid units, Y+ downward):
  *   - 1 grid unit = P display pixels.
  *   - Grid origin is the figure's visual center (hip level).
- *   - Head top: row -8 (y = -24px), feet bottom: row +3 bottom edge (y = +12px).
- *   - Total figure: 11 grid-row span × P = 36 display px tall.
- *   - Total figure: 8 grid-col span × P = 24 display px wide (with arms).
+ *   - Head: circle center (0, -8P), radius 2P; feet bottom: row +3 bottom edge (y = +12px).
+ *   - Total figure: ~13 grid-row span × P ≈ 42 display px tall.
+ *   - Total figure: ~6 grid-col span × P = 18 display px wide (with arms).
  *
  * Gravity positioning (managed by renderers/cube-node.js, not this file):
  *   - Normal (upright): figure.y = 18 → feet-bottom at body y=30 (LCD bottom edge y=32).
@@ -23,13 +23,14 @@
  *
  * Layout overview (grid rows, each cell = P px):
  *
- *   row -8...-6  HEAD       4×3 solid block
- *   row -5       NECK       2×1 (cols -1, 0)
- *   row -4...-1  TORSO      4×4 solid block
- *   row  0...2   LEGS       1 col each, left=-2 right=+1
+ *   HEAD         circle at (0, -8P), radius 2P — bottom touches row -6 top
+ *   row -6       NECK       2×1 (cols -1, 0)
+ *   row -5       SHOULDERS  4×1 solid row (cols -2..+1)
+ *   row -4...-1  BODY       2×4 solid block (cols -1, 0)
+ *   row  0...2   LEGS       1 col each, left=-2 right=+1 (separated)
  *   row  3       FEET       2 cols each, left=-3..-2 right=+1..+2
- *   col -3/-4    LEFT ARM   2-segment, pose-dependent
- *   col +2/+3    RIGHT ARM  2-segment, pose-dependent
+ *   col -3..-5   LEFT ARM   3-segment, pose-dependent
+ *   col +2..+4   RIGHT ARM  3-segment, pose-dependent
  *
  * @dependencies PIXI.js v8 — Graphics objects are passed in, not imported directly.
  */
@@ -53,38 +54,37 @@ function cell(gfx, col, row) {
 // ─── Body part renderers ──────────────────────────────────────────────────────
 
 /**
- * Draws the head as a 4×3 solid block at rows -8 to -6, cols -2 to +1.
+ * Draws the head as a filled circle centred at (0, -8P), radius 2P.
+ * The circle bottom sits exactly at the top of the neck row (-6P = -18px).
  *
  * @param {any} gfx
  */
 function drawHead(gfx) {
-  for (let r = -8; r <= -6; r++) {
-    for (let c = -2; c <= 1; c++) {
-      cell(gfx, c, r);
-    }
-  }
+  gfx.circle(0, -8 * P, P * 2);
 }
 
 /**
- * Draws the neck as a 2×1 block at row -5, cols -1 to 0.
+ * Draws the neck as a 2×1 block at row -6, cols -1 to 0.
  *
  * @param {any} gfx
  */
 function drawNeck(gfx) {
-  cell(gfx, -1, -5);
-  cell(gfx, 0, -5);
+  cell(gfx, -1, -6);
+  cell(gfx, 0, -6);
 }
 
 /**
- * Draws the torso as a 4×4 solid block at rows -4 to -1, cols -2 to +1.
+ * Draws the torso: wide shoulder row (-5) then a narrower body (rows -4 to -1).
+ * Row -5 spans 4 cols (-2..+1) to form visible shoulders.
+ * Rows -4 to -1 span 2 cols (-1..0) for a slim waist.
  *
  * @param {any} gfx
  */
 function drawTorso(gfx) {
+  for (let c = -2; c <= 1; c++) cell(gfx, c, -5);
   for (let r = -4; r <= -1; r++) {
-    for (let c = -2; c <= 1; c++) {
-      cell(gfx, c, r);
-    }
+    cell(gfx, -1, r);
+    cell(gfx, 0, r);
   }
 }
 
@@ -109,22 +109,25 @@ function drawLegs(gfx, leftX = -2, rightX = 1) {
 }
 
 /**
- * Draws a single 2-segment arm using grid coordinates.
+ * Draws a single 3-segment arm using grid coordinates.
  *
  * @param {any} gfx
  * @param {number} col1 - Upper arm column
  * @param {number} row1 - Upper arm row
  * @param {number} col2 - Forearm column
  * @param {number} row2 - Forearm row
+ * @param {number} col3 - Hand column
+ * @param {number} row3 - Hand row
  */
-function drawArm(gfx, col1, row1, col2, row2) {
+function drawArm(gfx, col1, row1, col2, row2, col3, row3) {
   cell(gfx, col1, row1);
   cell(gfx, col2, row2);
+  cell(gfx, col3, row3);
 }
 
 // ─── Arm poses ────────────────────────────────────────────────────────────────
-// Shoulder anchor: left at col -3 row -4, right at col +2 row -4.
-// Torso occupies cols -2..+1, so arms attach directly outside the body sides.
+// Shoulder anchor: left at col -3 row -5, right at col +2 row -5.
+// Shoulders span cols -2..+1, so arms attach one cell outside each side.
 
 /**
  * Arms hanging down and outward (default idle pose).
@@ -132,8 +135,8 @@ function drawArm(gfx, col1, row1, col2, row2) {
  * @param {any} gfx
  */
 function drawArmsDown(gfx) {
-  drawArm(gfx, -3, -4, -4, -3);
-  drawArm(gfx,  2, -4,  3, -3);
+  drawArm(gfx, -3, -5, -4, -4, -5, -3);
+  drawArm(gfx,  2, -5,  3, -4,  4, -3);
 }
 
 /**
@@ -142,8 +145,8 @@ function drawArmsDown(gfx) {
  * @param {any} gfx
  */
 function drawArmsWide(gfx) {
-  drawArm(gfx, -3, -4, -4, -4);
-  drawArm(gfx,  2, -4,  3, -4);
+  drawArm(gfx, -3, -5, -4, -5, -5, -5);
+  drawArm(gfx,  2, -5,  3, -5,  4, -5);
 }
 
 /**
@@ -152,8 +155,8 @@ function drawArmsWide(gfx) {
  * @param {any} gfx
  */
 function drawArmsPlayDodger(gfx) {
-  drawArm(gfx, -3, -4, -4, -3);
-  drawArm(gfx,  2, -5,  3, -6);
+  drawArm(gfx, -3, -5, -4, -4, -5, -3);
+  drawArm(gfx,  2, -5,  3, -6,  4, -7);
 }
 
 /**
@@ -162,8 +165,8 @@ function drawArmsPlayDodger(gfx) {
  * @param {any} gfx
  */
 function drawArmsPlayWhip(gfx) {
-  drawArm(gfx, -3, -5, -4, -6);
-  drawArm(gfx,  2, -4,  3, -3);
+  drawArm(gfx, -3, -5, -4, -6, -5, -7);
+  drawArm(gfx,  2, -5,  3, -4,  4, -3);
 }
 
 /**
@@ -172,8 +175,8 @@ function drawArmsPlayWhip(gfx) {
  * @param {any} gfx
  */
 function drawArmsCurious(gfx) {
-  drawArm(gfx, -3, -4, -4, -3);
-  drawArm(gfx,  2, -4,  3, -4);
+  drawArm(gfx, -3, -5, -4, -4, -5, -3);
+  drawArm(gfx,  2, -5,  3, -5,  4, -5);
 }
 
 /**
