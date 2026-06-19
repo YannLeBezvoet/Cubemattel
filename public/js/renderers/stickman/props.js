@@ -20,7 +20,7 @@ const PP = 2;
  * @param {any} gfx
  */
 export function drawBall(gfx) {
-  const cx = 0, cy = 28;
+  const cx = 20, cy = 28;
   gfx.rect(cx - PP,      cy - 2 * PP, 2 * PP, PP);
   gfx.rect(cx - 2 * PP, cy - PP,     4 * PP, PP);
   gfx.rect(cx - 2 * PP, cy,          4 * PP, PP);
@@ -34,7 +34,7 @@ export function drawBall(gfx) {
  * @param {any} gfx
  */
 export function drawRope(gfx) {
-  const cx = 0, cy = 24;
+  const cx = 20, cy = 24;
   gfx.rect(cx - 3 * PP, cy,          6 * PP, PP);
   gfx.rect(cx - 4 * PP, cy + PP,     PP,     2 * PP);
   gfx.rect(cx + 3 * PP, cy + PP,     PP,     2 * PP);
