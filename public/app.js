@@ -18,7 +18,7 @@ const socket = io();
 const dom = getDomRefs();
 const scene = createScene(dom);
 
-bindControls({ socket, targetInput: dom.targetInput, directionButtons: dom.directionButtons });
+bindControls({ socket, targetInput: dom.targetInput, directionButtons: dom.directionButtons, findNearestBtn: dom.findNearestBtn });
 
 socket.on("connect", () => {
   scene.setMyCubeId(socket.id);

@@ -85,7 +85,7 @@ test("drawStickman arms-wide pose (surpris) stays within bounding box", () => {
 
 test("drawStickman joyeux pose arm cells reach above row -4 (y=-12)", () => {
   const gfxJoyeux = makeMockGfx();
-  drawStickman(gfxJoyeux, "joyeux", "Whip");
+  drawStickman(gfxJoyeux, "joyful", "Whip");
 
   const gfxHappy = makeMockGfx();
   drawStickman(gfxHappy, "happy", "Whip");
