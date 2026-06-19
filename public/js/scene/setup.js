@@ -65,9 +65,11 @@ export async function setupScene(sceneState, refs) {
   sceneState.linkGraphics = new PIXI.Graphics();
   sceneState.panOverlay = new PIXI.Graphics();
   sceneState.linksLayer.addChild(sceneState.linkGraphics);
-  sceneState.linksLayer.addChild(sceneState.panOverlay);
 
+  // panOverlay lives at stage level so the camera transform (applied to linksLayer
+  // and cubeLayer) never shifts it — the hit area must always cover the full screen.
   app.stage.addChild(sceneState.backgroundLayer);
+  app.stage.addChild(sceneState.panOverlay);
   app.stage.addChild(sceneState.linksLayer);
   app.stage.addChild(sceneState.cubeLayer);
   buildBackground(sceneState);

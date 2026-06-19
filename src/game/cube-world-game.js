@@ -149,7 +149,7 @@ class CubeWorldGame {
 
     ensureAllCoordinates(this.cubes);
 
-    let nearest = null;
+    let nearest = /** @type {Cube | null} */ (null);
     let nearestDistSq = Infinity;
     this.cubes.forEach((cube) => {
       if (cube.id === sourceId) return;

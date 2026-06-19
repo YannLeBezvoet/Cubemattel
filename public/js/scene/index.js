@@ -22,7 +22,7 @@ import { renderWorld } from "./world.js";
  * The returned object is the only interface consumers need.
  *
  * @param {{ cubeScene: HTMLElement, targetInput: HTMLInputElement, directionButtons: HTMLButtonElement[], cubeCount: HTMLElement, linkCount: HTMLElement, historyList: HTMLElement }} refs
- * @returns {{ setMyCubeId: (id: string) => void, handleWorldUpdate: (state: GameState) => void, setup: () => void, requestCenterOnPlayer: () => void }}
+ * @returns {{ setMyCubeId: (id: string) => void, handleWorldUpdate: (state: GameState) => void, setup: () => Promise<void>, requestCenterOnPlayer: () => void }}
  */
 export function createScene({
   cubeScene,

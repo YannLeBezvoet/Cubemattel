@@ -128,6 +128,10 @@ Each cube is a `PIXI.Container` with layers (bottom to top):
 - `upside_down`: `figure.scale.y = -1`, `figure.y = -19` (inverted gravity).
 - Props: ball (Dodger) or lasso (Whip), always at the bottom of the LCD screen.
 
+**Stage layer order (bottom → top):** `backgroundLayer` → `panOverlay` → `linksLayer` → `cubeLayer`.
+`panOverlay` sits above the background but below all world content; it is never camera-transformed, so its hit area always covers the full screen.
+`linksLayer` and `cubeLayer` are repositioned together by `applyCameraTransform` (pan.js) to implement camera movement.
+
 **Animations:**
 - **Bobbing**: sinusoidal per frame in the Pixi ticker (`animation.js`), intensity by emotion.
 - **Position transition**: `gsap.to(node, { x, y, duration: 0.35, ease: 'power2.out' })` triggered from `world.js/layoutCubes` on each `world:update`.
