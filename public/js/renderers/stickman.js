@@ -6,7 +6,7 @@
  * Assembles the stickman from sub-modules:
  *   - stickman/body.js  — head, neck, torso, legs (grid primitives)
  *   - stickman/arms.js  — arm poses (emotion-driven)
- *   - stickman/props.js — character prop icons (ball / rope)
+ *   - stickman/props.js — character prop icons (one per character)
  *
  * Coordinate system (grid units, Y+ downward):
  *   - 1 grid unit = P=3 display pixels.
@@ -22,7 +22,7 @@
 
 import { drawHead, drawNeck, drawTorso, drawLegs } from "./stickman/body.js";
 import { drawArms } from "./stickman/arms.js";
-import { drawBall, drawRope } from "./stickman/props.js";
+import { getCharacterPropDrawer } from "./stickman/props.js";
 
 /**
  * Draws the complete pixel-art stickman onto the given PIXI Graphics object.
@@ -30,7 +30,7 @@ import { drawBall, drawRope } from "./stickman/props.js";
  *
  * @param {any} gfx       - Figure Graphics object (figure-local coords)
  * @param {string} emotion    - 'happy' | 'surprised' | 'joyful' | 'curious' | 'disoriented'
- * @param {string} character  - 'Dodger' | 'Whip'
+ * @param {string} character  - Any Cube World character name (see constants.js)
  */
 export function drawStickman(gfx, emotion, character) {
   drawHead(gfx);
@@ -46,10 +46,9 @@ export function drawStickman(gfx, emotion, character) {
  * The caller must clear the graphics object before calling this function.
  *
  * @param {any} gfx      - Prop Graphics object (body-container coords)
- * @param {string} character - 'Dodger' | 'Whip'
+ * @param {string} character - Any Cube World character name (see constants.js)
  */
 export function drawProp(gfx, character) {
-  if (character === "Dodger") drawBall(gfx);
-  else drawRope(gfx);
+  getCharacterPropDrawer(character)(gfx);
   gfx.fill(0x000000);
 }

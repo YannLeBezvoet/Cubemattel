@@ -1,7 +1,7 @@
 // @ts-check
-const { CHARACTERS } = require("./constants");
+const { CHARACTERS, CHARACTER_DATA } = require("./constants");
 const { getMovementAction } = require("./movements");
-const { pickRandomAvailableColor } = require("./colors");
+const { getCharacterColor } = require("./colors");
 const {
   ensureAllCoordinates,
   findFirstIsolatedCoordinate,
@@ -37,7 +37,7 @@ class CubeWorldGame {
       ? preferredCharacter
       : CHARACTERS[this.cubes.size % CHARACTERS.length];
     const position = findFirstIsolatedCoordinate(this.cubes);
-    const color = pickRandomAvailableColor(this.cubes);
+    const color = getCharacterColor(character);
 
     const cube = {
       id,
@@ -46,7 +46,7 @@ class CubeWorldGame {
       character,
       orientation: "upright",
       emotion: "happy",
-      activity: character === "Dodger" ? "juggles a ball" : "jumps rope",
+      activity: CHARACTER_DATA[character]?.activity ?? "hangs around",
       connectedTo: [],
       x: position.x,
       y: position.y,

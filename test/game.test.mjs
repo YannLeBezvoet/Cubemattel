@@ -9,7 +9,7 @@
  */
 
 import { test, expect } from "vitest";
-import { CubeWorldGame, CUBE_COLORS } from "../src/game.js";
+import { CubeWorldGame, CHARACTER_DATA } from "../src/game.js";
 
 test("un cube réagit aux mouvements", () => {
   const game = new CubeWorldGame();
@@ -42,7 +42,7 @@ test("le joueur se déplace vers le cube cible pour se connecter", () => {
   expect(state.history.some((entry) => entry.text.includes("chat together"))).toBe(true);
 });
 
-test("chaque cube reçoit une couleur aléatoire différente", () => {
+test("each cube color is derived from its character and matches CHARACTER_DATA", () => {
   const game = new CubeWorldGame();
   game.createCube("a", "Alice", "Dodger");
   game.createCube("b", "Bob", "Whip");
@@ -53,9 +53,11 @@ test("chaque cube reçoit une couleur aléatoire différente", () => {
 
   expect(typeof cubeA.color).toBe("number");
   expect(typeof cubeB.color).toBe("number");
+  // Dodger and Whip have different canonical colors
   expect(cubeA.color).not.toBe(cubeB.color);
-  expect(CUBE_COLORS.includes(cubeA.color)).toBe(true);
-  expect(CUBE_COLORS.includes(cubeB.color)).toBe(true);
+  // Colors match CHARACTER_DATA
+  expect(cubeA.color).toBe(CHARACTER_DATA["Dodger"].color);
+  expect(cubeB.color).toBe(CHARACTER_DATA["Whip"].color);
 });
 
 test("la direction 'below' place le joueur en dessous du cube cible", () => {

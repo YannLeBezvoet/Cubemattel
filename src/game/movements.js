@@ -7,8 +7,10 @@
  *   - Map movement identifiers ("shake", "flip", "tilt", "play")
  *     to business fields (emotion, activity, orientation).
  *
- * @dependencies None (standalone module)
+ * @dependencies src/game/constants.js
  */
+
+const { CHARACTER_DATA } = require("./constants");
 
 /**
  * @typedef {import('../../types/cube.js').Cube} Cube
@@ -43,8 +45,7 @@ function getMovementAction(movement, cube) {
     },
     play: {
       emotion: "joyful",
-      activity:
-        cube.character === "Dodger" ? "dribbles and shoots" : "twirls the lasso",
+      activity: CHARACTER_DATA[cube.character]?.activity ?? "plays",
     },
   };
 

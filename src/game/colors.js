@@ -1,44 +1,26 @@
 // @ts-check
 /**
  * @file src/game/colors.js
- * @description Random colour selection for cubes.
+ * @description Character-based colour lookup for Cube World stickmen.
  *
- * Uses the predefined palette first before generating a fallback colour
- * so each cube has a distinct appearance for as long as the palette allows.
+ * Each stickman has a canonical 0xRRGGBB colour defined in CHARACTER_DATA
+ * (constants.js). Colour is deterministic — derived from the character name,
+ * not chosen randomly.
  *
  * @dependencies src/game/constants.js
  */
 
-const { CUBE_COLORS } = require("./constants");
+const { CHARACTER_DATA } = require("./constants");
 
 /**
- * @typedef {import('../../types/cube.js').Cube} Cube
- */
-
-/**
- * Picks an available 0xRRGGBB colour for a new cube.
- * Prefers unused colours from the predefined palette;
- * generates a distinct random colour if the palette is exhausted.
+ * Returns the canonical 0xRRGGBB colour for the given character name.
+ * Falls back to neutral mid-grey (0x888888) for unknown character names.
  *
- * @param {Map<string, Cube>} cubes - État courant des cubes du monde
- * @returns {number} Couleur au format 0xRRGGBB
+ * @param {string} character - Stickman name (e.g. "Dodger", "Whip")
+ * @returns {number} Colour as 0xRRGGBB integer
  */
-function pickRandomAvailableColor(cubes) {
-  const usedColors = new Set([...cubes.values()].map((cube) => cube.color).filter(Number.isInteger));
-  const availableColors = CUBE_COLORS.filter((color) => !usedColors.has(color));
-  if (availableColors.length > 0) {
-    return availableColors[Math.floor(Math.random() * availableColors.length)];
-  }
-
-  let color;
-  do {
-    const red = 96 + Math.floor(Math.random() * 160);
-    const green = 96 + Math.floor(Math.random() * 160);
-    const blue = 96 + Math.floor(Math.random() * 160);
-    color = (red << 16) | (green << 8) | blue;
-  } while (usedColors.has(color));
-
-  return color;
+function getCharacterColor(character) {
+  return CHARACTER_DATA[character]?.color ?? 0x888888;
 }
 
-module.exports = { pickRandomAvailableColor };
+module.exports = { getCharacterColor };

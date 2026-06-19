@@ -12,9 +12,9 @@
 export interface Cube {
   id: string;
   playerName: string;
-  /** 0xRRGGBB integer colour */
+  /** 0xRRGGBB integer colour — canonical per character, from CHARACTER_DATA */
   color: number;
-  /** "Dodger" | "Whip" */
+  /** One of the 22 Cube World stickman names (see src/game/constants.js CHARACTER_DATA) */
   character: string;
   /** "upright" | "upside_down" */
   orientation: string;

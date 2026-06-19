@@ -131,7 +131,7 @@ test("all emotion poses draw same number of body cells (head+neck+torso+legs)", 
 
 // ─── drawProp tests ───────────────────────────────────────────────────────────
 
-test("drawProp Dodger draws a basketball (4 rects)", () => {
+test("drawProp Dodger draws a ball (4 rects)", () => {
   const gfx = makeMockGfx();
   drawProp(gfx, "Dodger");
   expect(gfx.rects.length).toBe(4);
@@ -141,4 +141,27 @@ test("drawProp Whip draws a rope (5 rects)", () => {
   const gfx = makeMockGfx();
   drawProp(gfx, "Whip");
   expect(gfx.rects.length).toBe(5);
+});
+
+test("drawProp draws at least 3 rects for every known character", () => {
+  const characters = [
+    "Scoop", "Slim", "Whip", "Dodger",
+    "Mic", "Hans", "Handy", "Dusty",
+    "Chief", "Toner", "Dash", "Sparky",
+    "Slugger", "Kicks", "Slam", "Grinder",
+    "Dart", "Hip Hop", "Splash", "Sci-fi",
+    "Block Bash", "Global Getaways",
+  ];
+
+  for (const character of characters) {
+    const gfx = makeMockGfx();
+    drawProp(gfx, character);
+    expect(gfx.rects.length, `${character} drew no rects`).toBeGreaterThanOrEqual(3);
+  }
+});
+
+test("drawProp falls back gracefully for unknown characters", () => {
+  const gfx = makeMockGfx();
+  drawProp(gfx, "Unknown");
+  expect(gfx.rects.length).toBeGreaterThan(0);
 });

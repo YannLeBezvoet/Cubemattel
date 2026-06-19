@@ -5,6 +5,6 @@
  */
 
 const { CubeWorldGame } = require("./cube-world-game");
-const { CHARACTERS, CUBE_COLORS } = require("./constants");
+const { CHARACTER_DATA, CHARACTERS } = require("./constants");
 
-module.exports = { CubeWorldGame, CHARACTERS, CUBE_COLORS };
+module.exports = { CubeWorldGame, CHARACTER_DATA, CHARACTERS };

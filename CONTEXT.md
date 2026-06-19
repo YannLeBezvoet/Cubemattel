@@ -39,12 +39,12 @@ src/
 ├── server.js              # Express + Socket.IO bootstrap; exports { app, server, game }
 ├── socket-handlers.js     # Wires Socket.IO events; calls game.* then broadcastWorld
 └── game/
-    ├── index.js           # Re-exports CubeWorldGame, CHARACTERS, CUBE_COLORS
+    ├── index.js           # Re-exports CubeWorldGame, CHARACTER_DATA, CHARACTERS
     ├── cube-world-game.js # CubeWorldGame class — world state (Map<id, cube>); @ts-check
-    ├── constants.js       # CHARACTERS = ['Dodger','Whip']; CUBE_COLORS (12 hex colours)
+    ├── constants.js       # CHARACTER_DATA (22 stickmen: name→{color,prop,activity}); CHARACTERS list
     ├── coordinates.js     # Cube placement, movement and syncConnections on the grid
     ├── movements.js       # Translates a UI movement → { emotion, activity, orientation? }
-    └── colors.js          # Picks a random available colour
+    └── colors.js          # getCharacterColor — returns canonical colour for a character name
 
 public/
 ├── index.html             # HTML entry point; loads PIXI + GSAP via /vendor, then app.js
@@ -73,7 +73,7 @@ public/
         └── stickman/
             ├── body.js    # Grid primitive (cell, P) + body parts (head, neck, torso, legs)
             ├── arms.js    # Arm poses per emotion (down, wide, playDodger, playWhip, curious)
-            └── props.js   # Character prop icons: drawBall (Dodger), drawRope (Whip)
+            └── props.js   # Character prop icons (22 drawers); getCharacterPropDrawer(character)
 
 tsconfig.json              # Server TS config (CommonJS, checkJs:false, noEmit)
 vitest.config.mjs          # Vitest configuration (environment: node)
@@ -87,8 +87,8 @@ vitest.config.mjs          # Vitest configuration (environment: node)
 {
   id: string,            // socket.id
   playerName: string,    // "Player-XXXX"
-  color: number,         // 0xRRGGBB (one of the 12 CUBE_COLORS)
-  character: string,     // "Dodger" | "Whip"
+  color: number,         // 0xRRGGBB — canonical per character (from CHARACTER_DATA)
+  character: string,     // one of the 22 Cube World stickman names (see CHARACTER_DATA)
   orientation: string,   // "upright" | "upside_down"
   emotion: string,       // "happy" | "surprised" | "joyful" | "curious" | "disoriented"
   activity: string,      // text description of the current activity
@@ -121,7 +121,7 @@ vitest.config.mjs          # Vitest configuration (environment: node)
 2. Two cubes are neighbours only if they are **orthogonally adjacent** (Δx=1,Δy=0 or Δx=0,Δy=1).
 3. On connection, it is the **player (source) who moves** to the chosen face of the target cube — the target stays still.
 4. A face is unavailable if another cube already occupies it; the UI disables those faces automatically from the received world state.
-5. Colour is chosen randomly from unused colours.
+5. Colour is deterministic — each character has a canonical 0xRRGGBB colour defined in CHARACTER_DATA.
 6. `_syncConnections` rebuilds `connectedTo` from coordinates on every mutation.
 7. The public history is limited to the **last 20 entries**.
 
@@ -133,9 +133,9 @@ Each cube is a `PIXI.Container` with layers (bottom to top):
 `plate` (shadow) → `halo` (coloured glow) → `cubeShape` (frame + LCD screen) → `figure` (stickman) → `prop` (character icon)
 
 **Stickman:** pixel-art grid, 1 unit = P=3px. Origin = hip centre.
-- Arm pose by `emotion`: `surprised`→wide, `joyful`→play (Dodger/Whip differ), `curious`→curious, default→down.
+- Arm pose by `emotion`: `surprised`→wide, `joyful`→play (Dodger raises right arm, others left), `curious`→curious, default→down.
 - `upside_down`: `figure.scale.y = -1`, `figure.y = -19` (inverted gravity).
-- Props: ball (Dodger) or lasso (Whip), always at the bottom of the LCD screen.
+- Props: each character has a distinct pixel-art prop (see `set.md`), drawn at the bottom-right of the LCD screen. `getCharacterPropDrawer(character)` selects the correct draw function.
 
 **Stage layer order (bottom → top):** `backgroundLayer` → `panOverlay` → `linksLayer` → `cubeLayer`.
 `panOverlay` sits above the background but below all world content; it is never camera-transformed, so its hit area always covers the full screen.
