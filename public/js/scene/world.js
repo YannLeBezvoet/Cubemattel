@@ -15,6 +15,7 @@
 
 import { CubeNode } from "../renderers/cube-node.js";
 import { renderHistory, updateCounters, updateDirectionButtons } from "../dom.js";
+import { applyCameraTransform } from "./pan.js";
 
 /**
  * @typedef {import('../../../types/cube.js').Cube} Cube
@@ -55,6 +56,7 @@ import { renderHistory, updateCounters, updateDirectionButtons } from "../dom.js
  * @property {DragState | null} dragState
  * @property {ResizeObserver | null} resizeObserver
  * @property {boolean} hasFatalError
+ * @property {boolean} shouldCenterOnPlayer - When true, the next world update resets the camera to center on the player
  */
 
 /**
@@ -217,12 +219,26 @@ function layoutCubes(sceneState, cubes) {
     node.targetX = centerX + (x - originX) * gapX;
     node.targetY = centerY + (y - originY) * gapY;
 
+    const isPlayerCube = cube.id === sceneState.myCubeId && sceneState.shouldCenterOnPlayer;
+
     window.gsap.to(node, {
       x: node.targetX,
       y: node.targetY,
       duration: 0.35,
       ease: "power2.out",
       overwrite: "auto",
+      ...(isPlayerCube && {
+        onComplete: () => {
+          sceneState.shouldCenterOnPlayer = false;
+          window.gsap.to(sceneState, {
+            cameraX: -(cube.x - originX) * gapX,
+            cameraY: -(cube.y - originY) * gapY,
+            duration: 0.5,
+            ease: "power2.out",
+            onUpdate: () => applyCameraTransform(sceneState),
+          });
+        },
+      }),
     });
   });
 }

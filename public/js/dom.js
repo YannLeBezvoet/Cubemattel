@@ -42,9 +42,9 @@ export function getDomRefs() {
 /**
  * Wires the page buttons to Socket.IO events.
  *
- * @param {{ socket: any, targetInput: HTMLInputElement, directionButtons: HTMLButtonElement[], findNearestBtn: HTMLButtonElement }} params
+ * @param {{ socket: any, targetInput: HTMLInputElement, directionButtons: HTMLButtonElement[], findNearestBtn: HTMLButtonElement, onFindNearest?: () => void }} params
  */
-export function bindControls({ socket, targetInput, directionButtons, findNearestBtn }) {
+export function bindControls({ socket, targetInput, directionButtons, findNearestBtn, onFindNearest }) {
   document.querySelectorAll("[data-move]").forEach((button) => {
     const btn = /** @type {HTMLElement} */ (button);
     button.addEventListener("click", () => {
@@ -63,6 +63,7 @@ export function bindControls({ socket, targetInput, directionButtons, findNeares
 
   findNearestBtn.addEventListener("click", () => {
     socket.emit("cube:find-nearest");
+    onFindNearest?.();
   });
 }
 

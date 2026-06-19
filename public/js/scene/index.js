@@ -22,7 +22,7 @@ import { renderWorld } from "./world.js";
  * The returned object is the only interface consumers need.
  *
  * @param {{ cubeScene: HTMLElement, targetInput: HTMLInputElement, directionButtons: HTMLButtonElement[], cubeCount: HTMLElement, linkCount: HTMLElement, historyList: HTMLElement }} refs
- * @returns {{ setMyCubeId: (id: string) => void, handleWorldUpdate: (state: GameState) => void, setup: () => void }}
+ * @returns {{ setMyCubeId: (id: string) => void, handleWorldUpdate: (state: GameState) => void, setup: () => void, requestCenterOnPlayer: () => void }}
  */
 export function createScene({
   cubeScene,
@@ -53,6 +53,7 @@ export function createScene({
     cameraX: 0,
     cameraY: 0,
     dragState: null,
+    shouldCenterOnPlayer: false,
   };
 
   return {
@@ -85,6 +86,10 @@ export function createScene({
         linkCount,
         historyList,
       });
+    },
+    // Schedules a camera re-center on the player for the next world update.
+    requestCenterOnPlayer() {
+      sceneState.shouldCenterOnPlayer = true;
     },
   };
 }
