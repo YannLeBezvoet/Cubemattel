@@ -16,19 +16,21 @@ import { drawStickman, drawProp } from "../public/js/renderers/stickman.js";
 // ─── PIXI.Graphics mock ───────────────────────────────────────────────────────
 
 /**
- * Records every drawRect call so tests can assert on geometry.
+ * Records every rect() call so tests can assert on geometry.
+ * Mirrors the PixiJS v8 Graphics API used by stickman.js.
  *
- * @returns {{ rects: Array<{x,y,w,h}>, lineStyle: Function, beginFill: Function, endFill: Function, drawRect: Function }}
+ * @returns {{ rects: Array<{x,y,w,h}>, rect: Function, fill: Function }}
  */
 function makeMockGfx() {
   const rects = [];
   return {
     rects,
-    lineStyle() {},
-    beginFill() {},
-    endFill() {},
-    drawRect(x, y, w, h) {
+    rect(x, y, w, h) {
       rects.push({ x, y, w, h });
+      return this;
+    },
+    fill() {
+      return this;
     },
   };
 }

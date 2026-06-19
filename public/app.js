@@ -34,4 +34,6 @@ socket.on("world:update", (/** @type {import('../types/cube.js').GameState} */ s
   }
 });
 
-scene.setup();
+scene.setup().catch((error) => {
+  console.error("Scene initialisation failed", error);
+});

@@ -31,7 +31,7 @@
  *   col -3/-4    LEFT ARM   2-segment, pose-dependent
  *   col +2/+3    RIGHT ARM  2-segment, pose-dependent
  *
- * @dependencies PIXI.js v7 — Graphics objects are passed in, not imported directly.
+ * @dependencies PIXI.js v8 — Graphics objects are passed in, not imported directly.
  */
 
 /** Display pixels per grid unit. Change to scale the entire figure uniformly. */
@@ -47,7 +47,7 @@ const P = 3;
  * @param {number} row - Grid row
  */
 function cell(gfx, col, row) {
-  gfx.drawRect(col * P, row * P, P, P);
+  gfx.rect(col * P, row * P, P, P);
 }
 
 // ─── Body part renderers ──────────────────────────────────────────────────────
@@ -206,10 +206,10 @@ const PP = 2;
  */
 function drawBall(gfx) {
   const cx = 0, cy = 28;
-  gfx.drawRect(cx - PP,      cy - 2 * PP, 2 * PP, PP);
-  gfx.drawRect(cx - 2 * PP, cy - PP,     4 * PP, PP);
-  gfx.drawRect(cx - 2 * PP, cy,          4 * PP, PP);
-  gfx.drawRect(cx - PP,      cy + PP,    2 * PP, PP);
+  gfx.rect(cx - PP,      cy - 2 * PP, 2 * PP, PP);
+  gfx.rect(cx - 2 * PP, cy - PP,     4 * PP, PP);
+  gfx.rect(cx - 2 * PP, cy,          4 * PP, PP);
+  gfx.rect(cx - PP,      cy + PP,    2 * PP, PP);
 }
 
 /**
@@ -221,11 +221,11 @@ function drawBall(gfx) {
  */
 function drawRope(gfx) {
   const cx = 0, cy = 24;
-  gfx.drawRect(cx - 3 * PP, cy,          6 * PP, PP);
-  gfx.drawRect(cx - 4 * PP, cy + PP,     PP,     2 * PP);
-  gfx.drawRect(cx + 3 * PP, cy + PP,     PP,     2 * PP);
-  gfx.drawRect(cx - 3 * PP, cy + 3 * PP, 6 * PP, PP);
-  gfx.drawRect(cx + PP,     cy - 3 * PP, PP,     3 * PP);
+  gfx.rect(cx - 3 * PP, cy,          6 * PP, PP);
+  gfx.rect(cx - 4 * PP, cy + PP,     PP,     2 * PP);
+  gfx.rect(cx + 3 * PP, cy + PP,     PP,     2 * PP);
+  gfx.rect(cx - 3 * PP, cy + 3 * PP, 6 * PP, PP);
+  gfx.rect(cx + PP,     cy - 3 * PP, PP,     3 * PP);
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -241,16 +241,12 @@ function drawRope(gfx) {
  * @param {string} character     - 'Dodger' | 'Whip'
  */
 export function drawStickman(gfx, emotion, character) {
-  gfx.lineStyle(0);
-  gfx.beginFill(0x000000, 1);
-
   drawHead(gfx);
   drawNeck(gfx);
   drawTorso(gfx);
   drawArms(gfx, emotion, character);
   drawLegs(gfx);
-
-  gfx.endFill();
+  gfx.fill(0x000000);
 }
 
 /**
@@ -262,11 +258,7 @@ export function drawStickman(gfx, emotion, character) {
  * @param {string} character   - 'Dodger' | 'Whip'
  */
 export function drawProp(gfx, character) {
-  gfx.lineStyle(0);
-  gfx.beginFill(0x000000, 1);
-
   if (character === "Dodger") drawBall(gfx);
   else drawRope(gfx);
-
-  gfx.endFill();
+  gfx.fill(0x000000);
 }

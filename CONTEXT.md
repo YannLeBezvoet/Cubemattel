@@ -15,7 +15,7 @@ The server is the single source of truth — the client never mutates state loca
 
 **Stack:**
 - Server: Node.js ≥ 18, Express v5, Socket.IO v4 (CommonJS)
-- Client: PixiJS v7 (via `/vendor`), GSAP v3 (via `/vendor`), native ES modules, Socket.IO client
+- Client: PixiJS v8 (via `/vendor`), GSAP v3 (via `/vendor`), native ES modules, Socket.IO client
 - Tests: Vitest (`npm test` = `vitest run`, `npm run test:watch` = `vitest`)
 - Typing: TypeScript in `checkJs + noEmit` mode — no compilation, verified via `npm run typecheck`
 - No bundler, no front-end framework

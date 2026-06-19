@@ -76,9 +76,9 @@ export function createScene({
         showSceneError(sceneState, cubeScene, "Error updating the scene.");
       }
     },
-    // Initialises Pixi and visual layers once.
+    // Initialises Pixi and visual layers once. Returns a Promise (setupScene is async in v8).
     setup() {
-      setupScene(sceneState, {
+      return setupScene(sceneState, {
         cubeScene,
         targetInput,
         cubeCount,

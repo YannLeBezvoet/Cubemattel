@@ -15,7 +15,7 @@
  * The `figure` layer is Y-flipped when the cube orientation is "upside_down".
  * Position transitions are driven by GSAP via scene/world.js (not this module).
  *
- * @dependencies PIXI.js v7 (via window.PIXI), renderers/stickman.js
+ * @dependencies PIXI.js v8 (via window.PIXI), renderers/stickman.js
  */
 
 /**
@@ -61,17 +61,8 @@ export function createCubeNode(id, onSelect) {
   const figure = new PIXI.Graphics();
   const prop = new PIXI.Graphics();
   const plate = new PIXI.Graphics();
-  const label = new PIXI.Text("", {
-    fontFamily: "Arial",
-    fontSize: 12,
-    fill: 0xedf4ff,
-    fontWeight: "700",
-  });
-  const mood = new PIXI.Text("", {
-    fontFamily: "Arial",
-    fontSize: 11,
-    fill: 0xbdd2f5,
-  });
+  const label = new PIXI.Text({ text: "", style: { fontFamily: "Arial", fontSize: 12, fill: 0xedf4ff, fontWeight: "700" } });
+  const mood = new PIXI.Text({ text: "", style: { fontFamily: "Arial", fontSize: 11, fill: 0xbdd2f5 } });
 
   label.anchor.set(0.5, 0);
   mood.anchor.set(0.5, 0);
@@ -121,20 +112,13 @@ export function drawCube(node, cube) {
   node.cubeShape.clear();
 
   // Outer coloured plastic frame (rounded corners like the physical device)
-  node.cubeShape.lineStyle(0);
-  node.cubeShape.beginFill(cubeColor, 1);
-  node.cubeShape.drawRoundedRect(-40, -40, 80, 80, 6);
-  node.cubeShape.endFill();
+  node.cubeShape.roundRect(-40, -40, 80, 80, 6).fill(cubeColor);
 
   // Dark inner bezel (simulates the recess between frame and screen)
-  node.cubeShape.beginFill(0x0a0c10, 1);
-  node.cubeShape.drawRect(-33, -36, 66, 72);
-  node.cubeShape.endFill();
+  node.cubeShape.rect(-33, -36, 66, 72).fill(0x0a0c10);
 
   // LCD screen surface (medium-dark grey, slightly inset from the bezel)
-  node.cubeShape.beginFill(0x2e3540, 1);
-  node.cubeShape.drawRect(-29, -33, 58, 65);
-  node.cubeShape.endFill();
+  node.cubeShape.rect(-29, -33, 58, 65).fill(0x2e3540);
 
   // ── Stickman figure ────────────────────────────────────────────────────────
   // Gravity: feet touch the LCD bottom (y=30) when upright, LCD top (y=-31) when upside_down.
@@ -154,13 +138,10 @@ export function drawCube(node, cube) {
 
   // ── Plate (drop-shadow) and halo (colour glow) ────────────────────────────
   node.plate.clear();
-  node.plate.beginFill(0x000000, 0.2);
-  node.plate.drawRoundedRect(-44, -44, 92, 92, 12);
-  node.plate.endFill();
+  node.plate.roundRect(-44, -44, 92, 92, 12).fill({ color: 0x000000, alpha: 0.2 });
 
   node.halo.clear();
-  node.halo.lineStyle(5, cubeColor, 0.22);
-  node.halo.drawRoundedRect(-48, -48, 96, 96, 14);
+  node.halo.roundRect(-48, -48, 96, 96, 14).stroke({ width: 5, color: cubeColor, alpha: 0.22 });
 
   // ── Labels ─────────────────────────────────────────────────────────────────
   node.label.text = cube.playerName;

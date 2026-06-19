@@ -102,9 +102,7 @@ export function updatePanOverlay(sceneState) {
   const width = sceneState.app.screen.width;
   const height = sceneState.app.screen.height;
   sceneState.panOverlay.clear();
-  sceneState.panOverlay.beginFill(0x000000, 0);
-  sceneState.panOverlay.drawRect(0, 0, width, height);
-  sceneState.panOverlay.endFill();
+  sceneState.panOverlay.rect(0, 0, width, height).fill({ color: 0x000000, alpha: 0 });
   sceneState.panOverlay.hitArea = new window.PIXI.Rectangle(0, 0, width, height);
 }
 

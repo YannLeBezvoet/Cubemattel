@@ -24,10 +24,14 @@ import { applyCameraTransform, setupPanInteractions, updatePanOverlay } from "./
  * Wires the resize observer and the animation ticker.
  * Renders the buffered world state immediately after setup.
  *
+ * In PixiJS v8, Application.init() is async — the renderer is not created
+ * by the constructor, so this function must be awaited by the caller.
+ *
  * @param {SceneState} sceneState
  * @param {{ cubeScene: HTMLElement, targetInput: HTMLInputElement, cubeCount: HTMLElement, linkCount: HTMLElement, historyList: HTMLElement }} refs
+ * @returns {Promise<void>}
  */
-export function setupScene(sceneState, refs) {
+export async function setupScene(sceneState, refs) {
   const { cubeScene } = refs;
   if (!window.PIXI) {
     cubeScene.innerHTML = '<div class="empty-state">PixiJS not found. Please reload the page.</div>';
@@ -35,9 +39,9 @@ export function setupScene(sceneState, refs) {
   }
 
   const PIXI = window.PIXI;
-  let app;
+  const app = new PIXI.Application();
   try {
-    app = new PIXI.Application({
+    await app.init({
       antialias: true,
       backgroundAlpha: 0,
       autoDensity: true,
@@ -50,8 +54,7 @@ export function setupScene(sceneState, refs) {
     return;
   }
 
-  const view = /** @type {any} */ (app.view || (/** @type {any} */ (app)).canvas);
-  cubeScene.appendChild(view);
+  cubeScene.appendChild(app.canvas);
   app.renderer.resize(Math.max(1, cubeScene.clientWidth), Math.max(1, cubeScene.clientHeight));
   cubeScene.classList.add("scene-pan-ready");
 
@@ -72,9 +75,9 @@ export function setupScene(sceneState, refs) {
   applyCameraTransform(sceneState);
   setupPanInteractions(sceneState);
 
-  app.ticker.add((delta) => {
+  app.ticker.add((ticker) => {
     try {
-      animate(sceneState, delta);
+      animate(sceneState, ticker.deltaTime);
     } catch (error) {
       console.error("PixiJS render error", error);
       app.ticker.stop();
