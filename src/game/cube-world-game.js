@@ -4,7 +4,7 @@ const { getMovementAction } = require("./movements");
 const { pickRandomAvailableColor } = require("./colors");
 const {
   ensureAllCoordinates,
-  findFirstFreeCoordinate,
+  findFirstIsolatedCoordinate,
   moveSourceToTarget,
 } = require("./coordinates");
 
@@ -34,7 +34,7 @@ class CubeWorldGame {
     const character = CHARACTERS.includes(preferredCharacter)
       ? preferredCharacter
       : CHARACTERS[this.cubes.size % CHARACTERS.length];
-    const position = findFirstFreeCoordinate(this.cubes);
+    const position = findFirstIsolatedCoordinate(this.cubes);
     const color = pickRandomAvailableColor(this.cubes);
 
     const cube = {

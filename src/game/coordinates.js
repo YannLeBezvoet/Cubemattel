@@ -72,6 +72,46 @@ function isPositionTaken(cubes, x, y, ignoredCubeId) {
 }
 
 /**
+ * Returns true if any cube (excluding ignoredCubeId) occupies one of the 8
+ * cells surrounding (x, y) — the 4 orthogonal faces and the 4 corners.
+ *
+ * @param {Map<string, import('../../types/cube.js').Cube>} cubes
+ * @param {number} x
+ * @param {number} y
+ * @param {string} [ignoredCubeId]
+ * @returns {boolean}
+ */
+function hasNeighbor(cubes, x, y, ignoredCubeId) {
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dy = -1; dy <= 1; dy++) {
+      if (dx === 0 && dy === 0) continue;
+      if (isPositionTaken(cubes, x + dx, y + dy, ignoredCubeId)) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Finds the first free cell with no cube touching it on any face or corner.
+ * Used only for initial cube placement so new cubes spawn fully isolated.
+ *
+ * @param {Map<string, import('../../types/cube.js').Cube>} cubes
+ * @param {string} [ignoredCubeId]
+ * @returns {{ x: number, y: number }}
+ */
+function findFirstIsolatedCoordinate(cubes, ignoredCubeId) {
+  const searchLimit = cubes.size * 3 + 2;
+  for (let y = -searchLimit; y <= searchLimit; y++) {
+    for (let x = -searchLimit; x <= searchLimit; x++) {
+      if (!isPositionTaken(cubes, x, y, ignoredCubeId) && !hasNeighbor(cubes, x, y, ignoredCubeId)) {
+        return { x, y };
+      }
+    }
+  }
+  return { x: searchLimit + 1, y: 0 };
+}
+
+/**
  * Returns the position of the cell adjacent to the target in the given direction.
  *
  * @param {{ x: number, y: number }} target
@@ -118,5 +158,6 @@ function moveSourceToTarget(cubes, sourceId, targetId, direction) {
 module.exports = {
   ensureAllCoordinates,
   findFirstFreeCoordinate,
+  findFirstIsolatedCoordinate,
   moveSourceToTarget,
 };
