@@ -24,13 +24,14 @@ const DIRECTION_OFFSETS = {
 /**
  * Returns references to the DOM elements used by the application.
  *
- * @returns {{ historyList: HTMLElement, targetInput: HTMLInputElement, directionButtons: HTMLButtonElement[], selfBadge: HTMLElement, cubeCount: HTMLElement, linkCount: HTMLElement, cubeScene: HTMLElement }}
+ * @returns {{ historyList: HTMLElement, targetInput: HTMLInputElement, directionButtons: HTMLButtonElement[], findNearestBtn: HTMLButtonElement, selfBadge: HTMLElement, cubeCount: HTMLElement, linkCount: HTMLElement, cubeScene: HTMLElement }}
  */
 export function getDomRefs() {
   return {
     historyList: /** @type {HTMLElement} */ (document.getElementById("history")),
     targetInput: /** @type {HTMLInputElement} */ (document.getElementById("targetId")),
     directionButtons: /** @type {HTMLButtonElement[]} */ ([...document.querySelectorAll(".dir-btn")]),
+    findNearestBtn: /** @type {HTMLButtonElement} */ (document.getElementById("findNearestBtn")),
     selfBadge: /** @type {HTMLElement} */ (document.getElementById("selfBadge")),
     cubeCount: /** @type {HTMLElement} */ (document.getElementById("cubeCount")),
     linkCount: /** @type {HTMLElement} */ (document.getElementById("linkCount")),
@@ -41,9 +42,9 @@ export function getDomRefs() {
 /**
  * Wires the page buttons to Socket.IO events.
  *
- * @param {{ socket: any, targetInput: HTMLInputElement, directionButtons: HTMLButtonElement[] }} params
+ * @param {{ socket: any, targetInput: HTMLInputElement, directionButtons: HTMLButtonElement[], findNearestBtn: HTMLButtonElement }} params
  */
-export function bindControls({ socket, targetInput, directionButtons }) {
+export function bindControls({ socket, targetInput, directionButtons, findNearestBtn }) {
   document.querySelectorAll("[data-move]").forEach((button) => {
     const btn = /** @type {HTMLElement} */ (button);
     button.addEventListener("click", () => {
@@ -58,6 +59,10 @@ export function bindControls({ socket, targetInput, directionButtons }) {
       if (!targetId) return;
       socket.emit("cubes:connect", { targetId, direction: btn.dataset.dir });
     });
+  });
+
+  findNearestBtn.addEventListener("click", () => {
+    socket.emit("cube:find-nearest");
   });
 }
 

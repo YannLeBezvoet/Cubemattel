@@ -17,7 +17,7 @@ test("un cube réagit aux mouvements", () => {
 
   game.moveCube("a", "shake");
   let cube = game.getState().cubes[0];
-  expect(cube.emotion).toBe("surpris");
+  expect(cube.emotion).toBe("surprised");
 
   game.moveCube("a", "flip");
   cube = game.getState().cubes[0];
@@ -39,7 +39,7 @@ test("le joueur se déplace vers le cube cible pour se connecter", () => {
   // A est maintenant à droite de B
   expect(cubeA.y).toBe(cubeB.y);
   expect(cubeA.x).toBe(cubeB.x + 1);
-  expect(state.history.some((entry) => entry.text.includes("discutent ensemble"))).toBe(true);
+  expect(state.history.some((entry) => entry.text.includes("chat together"))).toBe(true);
 });
 
 test("chaque cube reçoit une couleur aléatoire différente", () => {
@@ -148,4 +148,73 @@ test("une face occupée du cube cible refuse la connexion", () => {
   expect(cubeA.connectedTo).not.toContain("c");
   // C n'est pas adjacent à A
   expect(Math.abs(cubeC.x - cubeA.x) + Math.abs(cubeC.y - cubeA.y)).not.toBe(1);
+});
+
+test("moveToNearestCube places the player near the nearest cube without direct contact", () => {
+  const game = new CubeWorldGame();
+  game.createCube("a", "Alice", "Dodger");
+  game.createCube("b", "Bob", "Whip");
+
+  // Force a far starting position for a and a known position for b
+  const cubeA = game.cubes.get("a");
+  const cubeB = game.cubes.get("b");
+  cubeB.x = 0;
+  cubeB.y = 0;
+  cubeA.x = 20;
+  cubeA.y = 20;
+
+  const moved = game.moveToNearestCube("a");
+  const state = game.getState();
+  const afterA = state.cubes.find((c) => c.id === "a");
+
+  expect(moved).toBe(true);
+  // Not orthogonally adjacent to b (no direct contact)
+  const dx = Math.abs(afterA.x - cubeB.x);
+  const dy = Math.abs(afterA.y - cubeB.y);
+  expect(dx + dy).not.toBe(1);
+  // But close to b (within 2 cells Euclidean)
+  expect(Math.sqrt(dx * dx + dy * dy)).toBeLessThanOrEqual(2);
+  // History records the move
+  expect(state.history.some((e) => e.text.includes("moves closer"))).toBe(true);
+});
+
+test("moveToNearestCube returns false and does not move when the player is alone", () => {
+  const game = new CubeWorldGame();
+  game.createCube("a", "Alice", "Dodger");
+
+  const cubeA = game.cubes.get("a");
+  const { x, y } = cubeA;
+
+  const moved = game.moveToNearestCube("a");
+
+  expect(moved).toBe(false);
+  expect(cubeA.x).toBe(x);
+  expect(cubeA.y).toBe(y);
+});
+
+test("moveToNearestCube result is never orthogonally adjacent to any cube", () => {
+  const game = new CubeWorldGame();
+  game.createCube("a", "Alice", "Dodger");
+  game.createCube("b", "Bob", "Whip");
+  game.createCube("c", "Chloé", "Dodger");
+
+  // Cluster b and c together, then move a toward them
+  const cubeB = game.cubes.get("b");
+  const cubeC = game.cubes.get("c");
+  const cubeA = game.cubes.get("a");
+  cubeB.x = 0; cubeB.y = 0;
+  cubeC.x = 1; cubeC.y = 0;
+  cubeA.x = 10; cubeA.y = 10;
+
+  game.moveToNearestCube("a");
+
+  const state = game.getState();
+  const afterA = state.cubes.find((c) => c.id === "a");
+  const others = state.cubes.filter((c) => c.id !== "a");
+
+  // a must not be orthogonally adjacent to any other cube
+  others.forEach((other) => {
+    const manhattan = Math.abs(afterA.x - other.x) + Math.abs(afterA.y - other.y);
+    expect(manhattan).not.toBe(1);
+  });
 });

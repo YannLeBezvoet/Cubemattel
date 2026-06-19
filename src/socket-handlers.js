@@ -41,6 +41,11 @@ function registerSocketHandlers(io, socket, game) {
     broadcastWorld(io, game);
   });
 
+  socket.on("cube:find-nearest", () => {
+    game.moveToNearestCube(socket.id);
+    broadcastWorld(io, game);
+  });
+
   socket.on("disconnect", () => {
     game.removeCube(socket.id);
     broadcastWorld(io, game);

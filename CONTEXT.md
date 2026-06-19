@@ -100,6 +100,7 @@ vitest.config.mjs          # Vitest configuration (environment: node)
 | Server→Client  | `world:update`    | `{ cubes, history }`               | Full world snapshot                            |
 | Client→Server  | `cube:move`       | `{ movement }` (shake/flip/tilt/play) | Updates cube emotion + activity             |
 | Client→Server  | `cubes:connect`   | `{ targetId, direction }` (`"above"/"below"/"left"/"right"`) | Moves the player to the indicated face of the target cube |
+| Client→Server  | `cube:find-nearest` | — | Moves the player close to the nearest cube without direct contact |
 | (auto)         | `connect`         | —                                  | Creates a cube for the new socket              |
 | (auto)         | `disconnect`      | —                                  | Removes the cube and recomputes links          |
 

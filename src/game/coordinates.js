@@ -92,6 +92,53 @@ function hasNeighbor(cubes, x, y, ignoredCubeId) {
 }
 
 /**
+ * Returns true if any cube (excluding ignoredCubeId) occupies one of the 4
+ * orthogonally adjacent cells of (x, y). Two orthogonally adjacent cubes are
+ * directly connected — this is the definition of "direct contact" in the game.
+ *
+ * @param {Map<string, import('../../types/cube.js').Cube>} cubes
+ * @param {number} x
+ * @param {number} y
+ * @param {string} [ignoredCubeId]
+ * @returns {boolean}
+ */
+function hasOrthogonalNeighbor(cubes, x, y, ignoredCubeId) {
+  return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(
+    ([dx, dy]) => isPositionTaken(cubes, x + dx, y + dy, ignoredCubeId)
+  );
+}
+
+/**
+ * Finds the free cell closest (by Euclidean distance) to (targetX, targetY)
+ * that is not orthogonally adjacent to any cube. Used to move a player near
+ * another cube without creating a direct connection.
+ *
+ * @param {Map<string, import('../../types/cube.js').Cube>} cubes
+ * @param {number} targetX
+ * @param {number} targetY
+ * @param {string} [ignoredCubeId]
+ * @returns {{ x: number, y: number }}
+ */
+function findNearestNonAdjacentPosition(cubes, targetX, targetY, ignoredCubeId) {
+  const searchLimit = cubes.size * 3 + 4;
+
+  const candidates = [];
+  for (let dy = -searchLimit; dy <= searchLimit; dy++) {
+    for (let dx = -searchLimit; dx <= searchLimit; dx++) {
+      candidates.push({ x: targetX + dx, y: targetY + dy, distSq: dx * dx + dy * dy });
+    }
+  }
+  candidates.sort((a, b) => a.distSq - b.distSq);
+
+  for (const { x, y } of candidates) {
+    if (!isPositionTaken(cubes, x, y, ignoredCubeId) && !hasOrthogonalNeighbor(cubes, x, y, ignoredCubeId)) {
+      return { x, y };
+    }
+  }
+  return { x: targetX + searchLimit + 1, y: targetY };
+}
+
+/**
  * Finds the first free cell with no cube touching it on any face or corner.
  * Used only for initial cube placement so new cubes spawn fully isolated.
  *
@@ -159,5 +206,6 @@ module.exports = {
   ensureAllCoordinates,
   findFirstFreeCoordinate,
   findFirstIsolatedCoordinate,
+  findNearestNonAdjacentPosition,
   moveSourceToTarget,
 };

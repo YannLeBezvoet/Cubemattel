@@ -112,6 +112,12 @@ p {
   box-shadow: none;
 }
 
+.find-nearest-btn {
+  background: rgba(255, 207, 102, 0.12);
+  border-color: rgba(255, 207, 102, 0.35);
+  color: var(--accent-strong);
+}
+
 button,
 input,
 select {

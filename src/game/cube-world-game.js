@@ -5,6 +5,7 @@ const { pickRandomAvailableColor } = require("./colors");
 const {
   ensureAllCoordinates,
   findFirstIsolatedCoordinate,
+  findNearestNonAdjacentPosition,
   moveSourceToTarget,
 } = require("./coordinates");
 
@@ -130,6 +131,48 @@ class CubeWorldGame {
       `${source.character} snaps ${directionLabel} ${target.character}'s cube and they chat together.`
     );
     this._recordInteractions(sourceId, targetId);
+  }
+
+  /**
+   * Moves the player's cube to the position closest to the nearest other cube
+   * that is not in direct contact (not orthogonally adjacent) with any cube.
+   * The player ends up nearby but unconnected, preserving isolation.
+   *
+   * @param {string} sourceId
+   * @returns {boolean} true if the cube was successfully moved
+   */
+  moveToNearestCube(sourceId) {
+    const source = this.cubes.get(sourceId);
+    if (!source || this.cubes.size < 2) {
+      return false;
+    }
+
+    ensureAllCoordinates(this.cubes);
+
+    let nearest = null;
+    let nearestDistSq = Infinity;
+    this.cubes.forEach((cube) => {
+      if (cube.id === sourceId) return;
+      const distSq = (cube.x - source.x) ** 2 + (cube.y - source.y) ** 2;
+      if (distSq < nearestDistSq) {
+        nearestDistSq = distSq;
+        nearest = cube;
+      }
+    });
+
+    if (!nearest) return false;
+
+    const destination = findNearestNonAdjacentPosition(this.cubes, nearest.x, nearest.y, sourceId);
+
+    if (source.x === destination.x && source.y === destination.y) {
+      return true;
+    }
+
+    source.x = destination.x;
+    source.y = destination.y;
+    this._syncConnections();
+    this._record(`${source.character} moves closer to ${nearest.character}'s cube.`);
+    return true;
   }
 
   /**
