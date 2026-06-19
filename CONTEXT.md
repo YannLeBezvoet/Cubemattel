@@ -42,7 +42,7 @@ src/
     ├── index.js           # Re-exports CubeWorldGame, CHARACTERS, CUBE_COLORS
     ├── cube-world-game.js # CubeWorldGame class — world state (Map<id, cube>); @ts-check
     ├── constants.js       # CHARACTERS = ['Dodger','Whip']; CUBE_COLORS (12 hex colours)
-    ├── coordinates.js     # Cube placement and connection on the grid
+    ├── coordinates.js     # Cube placement, movement and syncConnections on the grid
     ├── movements.js       # Translates a UI movement → { emotion, activity, orientation? }
     └── colors.js          # Picks a random available colour
 
@@ -53,18 +53,27 @@ public/
 ├── tsconfig.json          # Client TS config (ESNext + DOM, checkJs:false, noEmit)
 └── js/
     ├── globals.d.ts       # Extends Window: window.PIXI (PixiJS) and window.gsap (GSAP)
-    ├── dom.js             # getDomRefs, bindControls, setSelfBadge, DOM history
+    ├── dom.js             # Barrel re-export for dom/ sub-modules
+    ├── dom/
+    │   ├── refs.js        # getDomRefs — all DOM element lookups
+    │   ├── bindings.js    # bindControls — wires buttons to socket events
+    │   └── ui.js          # setSelfBadge, updateCounters, updateDirectionButtons,
+    │                      #   renderHistory, escapeHtml
     ├── scene/
     │   ├── index.js       # createScene() — factory; exposes setMyCubeId / handleWorldUpdate / setup
     │   ├── setup.js       # PixiJS initialisation, layers, ResizeObserver, background, ticker
-    │   ├── world.js       # renderWorld() — diff cubeNodes, GSAP position/flip tweens, history; @ts-check
-    │   ├── animation.js   # Ticker loop: sinusoidal bobbing only (lerp and flip delegated to GSAP)
-    │   ├── pan.js         # Camera drag and layer movement
+    │   ├── world.js       # renderWorld() — diff cubeNodes, GSAP position/flip tweens; @ts-check
+    │   ├── animation.js   # Ticker loop: sinusoidal bobbing (lerp and flip delegated to GSAP)
+    │   ├── pan.js         # Camera drag, zoom and applyCameraTransform
     │   ├── background.js  # Stars + floating particles (decoration)
     │   └── errors.js      # showSceneError() — fatal error message in the scene
     └── renderers/
-        ├── cube-node.js   # createCubeNode / drawCube — PIXI container for a cube; @ts-check
-        └── stickman.js    # drawStickman / drawProp — pixel art (P=3px grid)
+        ├── cube-node.js   # CubeNode class — PIXI container hierarchy and draw() method; @ts-check
+        ├── stickman.js    # Public API barrel: drawStickman, drawProp
+        └── stickman/
+            ├── body.js    # Grid primitive (cell, P) + body parts (head, neck, torso, legs)
+            ├── arms.js    # Arm poses per emotion (down, wide, playDodger, playWhip, curious)
+            └── props.js   # Character prop icons: drawBall (Dodger), drawRope (Whip)
 
 tsconfig.json              # Server TS config (CommonJS, checkJs:false, noEmit)
 vitest.config.mjs          # Vitest configuration (environment: node)
@@ -143,6 +152,8 @@ Each cube is a `PIXI.Container` with layers (bottom to top):
 
 - The server **never** emits to an individual socket — everything goes through `io.emit('world:update', ...)`.
 - `src/game.js` is a compatibility shim that re-exports `src/game/index.js`.
+- `public/js/dom.js` is a barrel that re-exports from `dom/refs.js`, `dom/bindings.js`, and `dom/ui.js`.
+- `public/js/renderers/stickman.js` is a barrel that assembles `drawStickman` / `drawProp` from `stickman/body.js`, `stickman/arms.js`, and `stickman/props.js`.
 - Client modules use **native ES modules** (`import/export`); server modules use **CommonJS** (`require/module.exports`).
 - `public/js/package.json` declares `"type": "module"` to enable ES modules in the client folder.
 - `window.PIXI` and `window.gsap` are loaded via `<script src="/vendor/...">` and declared in `public/js/globals.d.ts`.

@@ -40,8 +40,8 @@ export function animate(sceneState, delta) {
  * @returns {number}
  */
 function getBobIntensity(emotion) {
-  if (emotion === "joyeux") return 4.5;
-  if (emotion === "surpris") return 3.3;
+  if (emotion === "joyful") return 4.5;
+  if (emotion === "surprised") return 3.3;
   return 2.1;
 }
 

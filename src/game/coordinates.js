@@ -202,10 +202,42 @@ function moveSourceToTarget(cubes, sourceId, targetId, direction) {
   return true;
 }
 
+/**
+ * Rebuilds `connectedTo` for every cube from their current grid coordinates.
+ * Two cubes are connected if they are orthogonally adjacent (Δx=1,Δy=0 or Δx=0,Δy=1).
+ * Must be called after every mutation that changes positions.
+ *
+ * @param {Map<string, import('../../types/cube.js').Cube>} cubes
+ */
+function syncConnections(cubes) {
+  ensureAllCoordinates(cubes);
+
+  cubes.forEach((cube) => {
+    cube.connectedTo = [];
+  });
+
+  const byPosition = new Map();
+  cubes.forEach((cube) => {
+    byPosition.set(`${cube.x},${cube.y}`, cube.id);
+  });
+
+  cubes.forEach((cube) => {
+    const connected = new Set();
+    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+      const neighborId = byPosition.get(`${cube.x + dx},${cube.y + dy}`);
+      if (neighborId && neighborId !== cube.id) {
+        connected.add(neighborId);
+      }
+    });
+    cube.connectedTo = [...connected];
+  });
+}
+
 module.exports = {
   ensureAllCoordinates,
   findFirstFreeCoordinate,
   findFirstIsolatedCoordinate,
   findNearestNonAdjacentPosition,
   moveSourceToTarget,
+  syncConnections,
 };

@@ -7,6 +7,7 @@ const {
   findFirstIsolatedCoordinate,
   findNearestNonAdjacentPosition,
   moveSourceToTarget,
+  syncConnections,
 } = require("./coordinates");
 
 /**
@@ -188,35 +189,8 @@ class CubeWorldGame {
     };
   }
 
-  // Rebuilds connections from coordinates.
   _syncConnections() {
-    ensureAllCoordinates(this.cubes);
-    this.cubes.forEach((cube) => {
-      cube.connectedTo = [];
-    });
-
-    const byPosition = new Map();
-    this.cubes.forEach((cube) => {
-      byPosition.set(`${cube.x},${cube.y}`, cube.id);
-    });
-
-    const neighbors = [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ];
-
-    this.cubes.forEach((cube) => {
-      const connected = new Set();
-      neighbors.forEach(([dx, dy]) => {
-        const neighborId = byPosition.get(`${cube.x + dx},${cube.y + dy}`);
-        if (neighborId && neighborId !== cube.id) {
-          connected.add(neighborId);
-        }
-      });
-      cube.connectedTo = [...connected];
-    });
+    syncConnections(this.cubes);
   }
 
   /**
