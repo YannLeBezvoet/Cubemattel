@@ -110,8 +110,8 @@ function hasOrthogonalNeighbor(cubes, x, y, ignoredCubeId) {
 
 /**
  * Finds the free cell closest (by Euclidean distance) to (targetX, targetY)
- * that is not orthogonally adjacent to any cube. Used to move a player near
- * another cube without creating a direct connection.
+ * that is not adjacent (face or corner) to any cube. Used to move a player near
+ * another cube without any contact, including diagonal.
  *
  * @param {Map<string, import('../../types/cube.js').Cube>} cubes
  * @param {number} targetX
@@ -131,7 +131,7 @@ function findNearestNonAdjacentPosition(cubes, targetX, targetY, ignoredCubeId) 
   candidates.sort((a, b) => a.distSq - b.distSq);
 
   for (const { x, y } of candidates) {
-    if (!isPositionTaken(cubes, x, y, ignoredCubeId) && !hasOrthogonalNeighbor(cubes, x, y, ignoredCubeId)) {
+    if (!isPositionTaken(cubes, x, y, ignoredCubeId) && !hasNeighbor(cubes, x, y, ignoredCubeId)) {
       return { x, y };
     }
   }

@@ -168,10 +168,10 @@ test("moveToNearestCube places the player near the nearest cube without direct c
   const afterA = state.cubes.find((c) => c.id === "a");
 
   expect(moved).toBe(true);
-  // Not orthogonally adjacent to b (no direct contact)
+  // Not adjacent to b on any face or corner (Chebyshev distance >= 2)
   const dx = Math.abs(afterA.x - cubeB.x);
   const dy = Math.abs(afterA.y - cubeB.y);
-  expect(dx + dy).not.toBe(1);
+  expect(Math.max(dx, dy)).toBeGreaterThanOrEqual(2);
   // But close to b (within 2 cells Euclidean)
   expect(Math.sqrt(dx * dx + dy * dy)).toBeLessThanOrEqual(2);
   // History records the move
@@ -212,9 +212,10 @@ test("moveToNearestCube result is never orthogonally adjacent to any cube", () =
   const afterA = state.cubes.find((c) => c.id === "a");
   const others = state.cubes.filter((c) => c.id !== "a");
 
-  // a must not be orthogonally adjacent to any other cube
+  // a must not be adjacent (face or corner) to any other cube
   others.forEach((other) => {
-    const manhattan = Math.abs(afterA.x - other.x) + Math.abs(afterA.y - other.y);
-    expect(manhattan).not.toBe(1);
+    const dx = Math.abs(afterA.x - other.x);
+    const dy = Math.abs(afterA.y - other.y);
+    expect(Math.max(dx, dy)).toBeGreaterThanOrEqual(2);
   });
 });
