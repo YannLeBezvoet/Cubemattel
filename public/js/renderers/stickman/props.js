@@ -9,6 +9,13 @@
  * They appear at the bottom of the LCD screen area and mirror vertically
  * when the cube is upside_down (handled by cube-node.js via scale.y = -1).
  *
+ * Structure:
+ *   PROP_DRAWERS        — one draw function per unique prop type (20 types for 22 characters).
+ *   CHARACTER_PROP_TYPE — maps each character name to its prop type string, mirroring
+ *                         the `prop` field of CHARACTER_DATA on the server.
+ *   Characters sharing a prop type (e.g. Dodger/Kicks/Slam → "ball") resolve to the
+ *   same drawer. Adding a character only requires one entry in CHARACTER_PROP_TYPE.
+ *
  * Public API:
  *   getCharacterPropDrawer(character) → draw function for the given character.
  *
@@ -264,41 +271,71 @@ function drawGlobe(gfx) {
   gfx.rect(cx - PP,     cy + 2 * PP, 2 * PP, PP);
 }
 
-// ─── Character → prop mapping ─────────────────────────────────────────────────
+// ─── Prop type → draw function ───────────────────────────────────────────────
 
 /** @type {Record<string, (gfx: any) => void>} */
-const CHARACTER_PROP_DRAWERS = {
-  Scoop:             drawBone,
-  Slim:              drawStick,
-  Whip:              drawRope,
-  Dodger:            drawBall,
-  Mic:               drawMic,
-  Hans:              drawDumbbell,
-  Handy:             drawWrench,
-  Dusty:             drawBroom,
-  Chief:             drawBadge,
-  Toner:             drawBriefcase,
-  Dash:              drawPackage,
-  Sparky:            drawAxe,
-  Slugger:           drawBat,
-  Kicks:             drawBall,
-  Slam:              drawBall,
-  Grinder:           drawSkateboard,
-  Dart:              drawMirror,
-  "Hip Hop":         drawSpeaker,
-  Splash:            drawFaucet,
-  "Sci-fi":          drawAtom,
-  "Block Bash":      drawBuilding,
-  "Global Getaways": drawGlobe,
+const PROP_DRAWERS = {
+  bone:       drawBone,
+  stick:      drawStick,
+  rope:       drawRope,
+  ball:       drawBall,
+  mic:        drawMic,
+  dumbbell:   drawDumbbell,
+  wrench:     drawWrench,
+  broom:      drawBroom,
+  badge:      drawBadge,
+  briefcase:  drawBriefcase,
+  package:    drawPackage,
+  axe:        drawAxe,
+  bat:        drawBat,
+  skateboard: drawSkateboard,
+  mirror:     drawMirror,
+  speaker:    drawSpeaker,
+  faucet:     drawFaucet,
+  atom:       drawAtom,
+  building:   drawBuilding,
+  globe:      drawGlobe,
+};
+
+// ─── Character → prop type ────────────────────────────────────────────────────
+// Mirrors the `prop` field of CHARACTER_DATA on the server (src/game/constants.js).
+// Characters sharing a prop type (e.g. Dodger/Kicks/Slam → "ball") resolve to the same drawer.
+
+/** @type {Record<string, string>} */
+const CHARACTER_PROP_TYPE = {
+  Scoop:             "bone",
+  Slim:              "stick",
+  Whip:              "rope",
+  Dodger:            "ball",
+  Mic:               "mic",
+  Hans:              "dumbbell",
+  Handy:             "wrench",
+  Dusty:             "broom",
+  Chief:             "badge",
+  Toner:             "briefcase",
+  Dash:              "package",
+  Sparky:            "axe",
+  Slugger:           "bat",
+  Kicks:             "ball",
+  Slam:              "ball",
+  Grinder:           "skateboard",
+  Dart:              "mirror",
+  "Hip Hop":         "speaker",
+  Splash:            "faucet",
+  "Sci-fi":          "atom",
+  "Block Bash":      "building",
+  "Global Getaways": "globe",
 };
 
 /**
  * Returns the prop drawing function for the given character name.
+ * Resolves character → prop type → draw function.
  * Falls back to drawBall for unknown characters.
  *
  * @param {string} character - Stickman name (e.g. "Dodger", "Mic")
  * @returns {(gfx: any) => void}
  */
 export function getCharacterPropDrawer(character) {
-  return CHARACTER_PROP_DRAWERS[character] ?? drawBall;
+  const propType = CHARACTER_PROP_TYPE[character];
+  return PROP_DRAWERS[propType] ?? drawBall;
 }
