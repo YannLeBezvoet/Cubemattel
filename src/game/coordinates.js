@@ -159,14 +159,16 @@ function findFirstIsolatedCoordinate(cubes, ignoredCubeId) {
 }
 
 /**
- * Returns the position of the cell adjacent to the target in the given direction.
+ * Returns the position of the cell adjacent to the target in the given direction,
+ * or null if the direction is unknown.
  *
  * @param {{ x: number, y: number }} target
  * @param {string} direction
- * @returns {{ x: number, y: number }}
+ * @returns {{ x: number, y: number } | null}
  */
 function targetFacePosition(target, direction) {
-  const offset = DIRECTION_OFFSETS[direction] ?? DIRECTION_OFFSETS.below;
+  const offset = DIRECTION_OFFSETS[direction];
+  if (!offset) return null;
   return { x: target.x + offset.dx, y: target.y + offset.dy };
 }
 
@@ -188,6 +190,7 @@ function moveSourceToTarget(cubes, sourceId, targetId, direction) {
   }
 
   const destination = targetFacePosition(target, direction);
+  if (!destination) return false;
 
   if (source.x === destination.x && source.y === destination.y) {
     return true;

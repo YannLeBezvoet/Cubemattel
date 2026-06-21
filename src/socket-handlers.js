@@ -15,6 +15,9 @@
  * @typedef {import('./game/cube-world-game').CubeWorldGame} CubeWorldGame
  */
 
+const VALID_MOVEMENTS = new Set(["shake", "flip", "tilt", "play"]);
+const VALID_DIRECTIONS = new Set(["above", "below", "left", "right"]);
+
 /**
  * Wires all Socket.IO events for a cube through a single handler.
  *
@@ -28,12 +31,18 @@ function registerSocketHandlers(io, socket, game) {
   game.createCube(socket.id, playerName);
   broadcastWorld(io, game);
 
-  socket.on("cube:move", (/** @type {{ movement: string }} */ { movement }) => {
+  socket.on("cube:move", (data) => {
+    const movement = data?.movement;
+    if (typeof movement !== "string" || !VALID_MOVEMENTS.has(movement)) return;
     game.moveCube(socket.id, movement);
     broadcastWorld(io, game);
   });
 
-  socket.on("cubes:connect", (/** @type {{ targetId: string, direction: "above" | "below" | "left" | "right" }} */ { targetId, direction }) => {
+  socket.on("cubes:connect", (data) => {
+    if (!data || typeof data !== "object") return;
+    const { targetId, direction } = data;
+    if (typeof targetId !== "string" || !targetId) return;
+    if (!VALID_DIRECTIONS.has(direction)) return;
     game.connectCubes(socket.id, targetId, direction);
     broadcastWorld(io, game);
   });

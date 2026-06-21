@@ -194,6 +194,20 @@ test("moveToNearestCube returns false and does not move when the player is alone
   expect(cubeA.y).toBe(y);
 });
 
+test("connectCubes with an unknown direction does not move the source cube", () => {
+  const game = new CubeWorldGame();
+  game.createCube("a", "Alice", "Dodger");
+  game.createCube("b", "Bob", "Whip");
+
+  const cubeA = game.cubes.get("a");
+  const { x, y } = cubeA;
+
+  game.connectCubes("a", "b", "diagonal");
+
+  expect(cubeA.x).toBe(x);
+  expect(cubeA.y).toBe(y);
+});
+
 test("moveToNearestCube result is never orthogonally adjacent to any cube", () => {
   const game = new CubeWorldGame();
   game.createCube("a", "Alice", "Dodger");
