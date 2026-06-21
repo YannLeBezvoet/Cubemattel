@@ -11,8 +11,6 @@
  * @dependencies src/game
  */
 
-const { CHARACTERS } = require("./game");
-
 /**
  * @typedef {import('./game/cube-world-game').CubeWorldGame} CubeWorldGame
  */
@@ -26,9 +24,8 @@ const { CHARACTERS } = require("./game");
  */
 function registerSocketHandlers(io, socket, game) {
   const playerName = `Player-${socket.id.slice(0, 4)}`;
-  const preferredCharacter = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
 
-  game.createCube(socket.id, playerName, preferredCharacter);
+  game.createCube(socket.id, playerName);
   broadcastWorld(io, game);
 
   socket.on("cube:move", (/** @type {{ movement: string }} */ { movement }) => {

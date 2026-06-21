@@ -29,13 +29,13 @@ class CubeWorldGame {
    *
    * @param {string} id
    * @param {string} playerName
-   * @param {string} preferredCharacter
+   * @param {string} [preferredCharacter] - Optional; falls back to a random character.
    * @returns {Cube}
    */
   createCube(id, playerName, preferredCharacter) {
     const character = CHARACTERS.includes(preferredCharacter)
       ? preferredCharacter
-      : CHARACTERS[this.cubes.size % CHARACTERS.length];
+      : CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
     const position = findFirstIsolatedCoordinate(this.cubes);
     const color = getCharacterColor(character);
 
