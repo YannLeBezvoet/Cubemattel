@@ -2,10 +2,12 @@
  * @file stickman.test.mjs
  * @description Unit tests for stickman pixel-art renderer.
  *
- * Verifies that drawStickman and drawProp produce geometry that stays within
- * the declared bounding box (rect-based, head circle excluded):
- *   - Width:  30 display px  (cols -5 to +4 × P=3, arms included)
- *   - Height: 30 display px  (rows -6 to +3 × P=3, y=-18..+12)
+ * The stickman is a 12×20 sprite pixel grid with P=3 display pixels per
+ * sprite pixel. Origin: sprite col 6 = x 0, sprite row 11 = y 0 (waist).
+ *
+ * Bounding box (body + arms, rect-based):
+ *   Width:  36 display px  (cols 0–11 → x −18..+18)
+ *   Height: 60 display px  (rows 0–19 → y −33..+27)
  *
  * Uses a lightweight PIXI.Graphics mock — no browser required.
  */
@@ -64,17 +66,17 @@ test("drawStickman exports correctly", () => {
   expect(typeof drawProp).toBe("function");
 });
 
-test("drawStickman default pose fits within 30×30 px bounding box", () => {
+test("drawStickman default pose fits within 36×60 px bounding box", () => {
   const gfx = makeMockGfx();
   drawStickman(gfx, "happy", "Whip");
 
   expect(gfx.rects.length).toBeGreaterThan(0);
 
   const { minX, minY, maxX, maxY } = bbox(gfx.rects);
-  expect(minX).toBeGreaterThanOrEqual(-15);
-  expect(maxX).toBeLessThanOrEqual(15);
-  expect(minY).toBeGreaterThanOrEqual(-24);
-  expect(maxY).toBeLessThanOrEqual(12);
+  expect(minX).toBeGreaterThanOrEqual(-18);
+  expect(maxX).toBeLessThanOrEqual(18);
+  expect(minY).toBeGreaterThanOrEqual(-33);
+  expect(maxY).toBeLessThanOrEqual(27);
 });
 
 test("drawStickman arms-wide pose (surprised) stays within bounding box", () => {
@@ -82,10 +84,10 @@ test("drawStickman arms-wide pose (surprised) stays within bounding box", () => 
   drawStickman(gfx, "surprised", "Dodger");
 
   const { minX, maxX, minY, maxY } = bbox(gfx.rects);
-  expect(minX).toBeGreaterThanOrEqual(-15);
-  expect(maxX).toBeLessThanOrEqual(15);
-  expect(minY).toBeGreaterThanOrEqual(-24);
-  expect(maxY).toBeLessThanOrEqual(12);
+  expect(minX).toBeGreaterThanOrEqual(-18);
+  expect(maxX).toBeLessThanOrEqual(18);
+  expect(minY).toBeGreaterThanOrEqual(-33);
+  expect(maxY).toBeLessThanOrEqual(27);
 });
 
 test("drawStickman joyful pose arm cells reach above row -4 (y=-12)", () => {
@@ -108,11 +110,11 @@ test("drawStickman head is symmetric around x=0", () => {
   const gfx = makeMockGfx();
   drawStickman(gfx, "happy", "Dodger");
 
+  // At y <= −15 (sprite rows 0–6): body spans cols 3–8 in the widest row (row 6, the chest).
+  // Grid coords: col 3 → x=−9, col 8 → x=6 (rect right edge = 9). Symmetric around 0.
   const headRects = gfx.rects.filter((r) => r.y <= -15);
   expect(headRects.length).toBeGreaterThan(0);
 
-  // Shoulder row + arm shoulder attachments at y <= -15 span cols -3..+2 (arm anchors)
-  // plus shoulders cols -2..+1, giving x: -9 to +9 (symmetric around 0).
   const { minX, maxX } = bbox(headRects);
   expect(minX).toBe(-9);
   expect(maxX).toBe(9);

@@ -53,8 +53,8 @@ export class CubeNode {
 
     this.label.anchor.set(0.5, 0);
     this.mood.anchor.set(0.5, 0);
-    this.label.y = 58;
-    this.mood.y = 74;
+    this.label.y = 76;
+    this.mood.y = 92;
 
     this.body = new PIXI.Container();
     this.body.addChild(this.plate, this.halo, this.cubeShape, this.figure, this.prop);
@@ -91,30 +91,35 @@ export class CubeNode {
     const cubeColor = Number.isInteger(cube.color) ? cube.color : 0xcccccc;
 
     // ── Device frame + LCD screen ───────────────────────────────────────────────
+    // LCD = 32×32 LCD pixels × P=3 = 96×96 display pixels, centred at origin.
     this.cubeShape.clear();
-    this.cubeShape.roundRect(-40, -40, 80, 80, 6).fill(cubeColor);
-    this.cubeShape.rect(-33, -36, 66, 72).fill(0x0a0c10);
-    this.cubeShape.rect(-29, -33, 58, 65).fill(0x2e3540);
+    this.cubeShape.roundRect(-58, -58, 116, 116, 8).fill(cubeColor);
+    this.cubeShape.rect(-52, -52, 104, 104).fill(0x0a0c10);
+    this.cubeShape.rect(-48, -48, 96, 96).fill(0x2e3540);
 
     // ── Stickman figure ────────────────────────────────────────────────────────
+    // Offset 5 LCD pixels (15 display px) toward the gravity direction so the
+    // figure stands near the bottom of the LCD and feet remain inside.
     const upsideDown = cube.orientation === "upside_down";
     this.figure.scale.y = upsideDown ? -1 : 1;
-    this.figure.position.set(0, upsideDown ? -19 : 18);
+    this.figure.position.set(0, upsideDown ? -15 : 15);
 
     this.figure.clear();
     drawStickman(this.figure, cube.emotion, cube.character);
 
     // ── Character prop icon ────────────────────────────────────────────────────
+    // Offset matches the figure so the prop appears near the LCD bottom corner.
     this.prop.clear();
     this.prop.scale.y = upsideDown ? -1 : 1;
+    this.prop.position.set(0, upsideDown ? -16 : 16);
     drawProp(this.prop, cube.character);
 
     // ── Plate (drop-shadow) and halo (colour glow) ────────────────────────────
     this.plate.clear();
-    this.plate.roundRect(-44, -44, 92, 92, 12).fill({ color: 0x000000, alpha: 0.2 });
+    this.plate.roundRect(-63, -63, 130, 130, 14).fill({ color: 0x000000, alpha: 0.2 });
 
     this.halo.clear();
-    this.halo.roundRect(-48, -48, 96, 96, 14).stroke({ width: 5, color: cubeColor, alpha: 0.22 });
+    this.halo.roundRect(-67, -67, 138, 138, 16).stroke({ width: 5, color: cubeColor, alpha: 0.22 });
 
     // ── Labels ─────────────────────────────────────────────────────────────────
     this.label.text = cube.playerName;

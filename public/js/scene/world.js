@@ -195,8 +195,8 @@ function layoutCubes(sceneState, cubes) {
   const height = sceneState.app.screen.height;
   const centerX = width / 2;
   const centerY = height / 2;
-  const gapX = 80;
-  const gapY = 80;
+  const gapX = 130;
+  const gapY = 130;
 
   // The origin is fixed once from the player's initial position.
   // It does not follow movement — only manual pan moves the camera.

@@ -71,8 +71,9 @@ public/
         ├── cube-node.js   # CubeNode class — PIXI container hierarchy and draw() method; @ts-check
         ├── stickman.js    # Public API barrel: drawStickman, drawProp
         └── stickman/
-            ├── body.js    # Grid primitive (cell, P) + body parts (head, neck, torso, legs)
-            ├── arms.js    # Arm poses per emotion (down, wide, playDodger, playWhip, curious)
+            ├── sprites.js # Pixel data: BODY_PIXELS (12×20) + ARMS_* pose arrays ([row,col] pairs)
+            ├── body.js    # Sprite renderer: drawSprite, drawArmPixels, drawBody; exports P=3
+            ├── arms.js    # Arm pose dispatch per emotion → drawArmPixels(gfx, ARMS_*)
             └── props.js   # Character prop icons (22 drawers); getCharacterPropDrawer(character)
 
 tsconfig.json              # Server TS config (CommonJS, checkJs:false, noEmit)
@@ -132,10 +133,12 @@ vitest.config.mjs          # Vitest configuration (environment: node)
 Each cube is a `PIXI.Container` with layers (bottom to top):
 `plate` (shadow) → `halo` (coloured glow) → `cubeShape` (frame + LCD screen) → `figure` (stickman) → `prop` (character icon)
 
-**Stickman:** pixel-art grid, 1 unit = P=3px. Origin = hip centre.
-- Arm pose by `emotion`: `surprised`→wide, `joyful`→play (Dodger raises right arm, others left), `curious`→curious, default→down.
-- `upside_down`: `figure.scale.y = -1`, `figure.y = -19` (inverted gravity).
-- Props: each character has a distinct pixel-art prop (see `set.md`), drawn at the bottom-right of the LCD screen. `getCharacterPropDrawer(character)` selects the correct draw function.
+**Stickman:** pixel-art sprite, 12×20 LCD pixels, 1 LCD pixel = P=3 display px. Origin = waist (sprite row 11, col 6).
+- Body pixel data in `stickman/sprites.js` (`BODY_PIXELS`); arm overlays as `[row,col]` pair lists.
+- Arm pose by `emotion`: `surprised`→wide, `joyful`→play (Dodger raises right arm, others left), `curious`→right arm extended, default→neutral hanging.
+- `upside_down`: `figure.scale.y = -1`, `figure.y = -15` (inverted gravity).
+- LCD screen: 32×32 LCD pixels = 96×96 display px, centred at cube origin.
+- Props: each character has a distinct pixel-art prop (see `set.md`), drawn at the bottom of the LCD screen. `getCharacterPropDrawer(character)` selects the correct draw function.
 
 **Stage layer order (bottom → top):** `backgroundLayer` → `panOverlay` → `linksLayer` → `cubeLayer`.
 `panOverlay` sits above the background but below all world content; it is never camera-transformed, so its hit area always covers the full screen.

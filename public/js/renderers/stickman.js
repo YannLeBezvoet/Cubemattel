@@ -4,23 +4,24 @@
  * @description Public API for the pixel-art stickman renderer.
  *
  * Assembles the stickman from sub-modules:
- *   - stickman/body.js  — head, neck, torso, legs (grid primitives)
- *   - stickman/arms.js  — arm poses (emotion-driven)
- *   - stickman/props.js — character prop icons (one per character)
+ *   - stickman/sprites.js — pixel data (BODY_PIXELS + arm pose arrays)
+ *   - stickman/body.js   — sprite renderer (drawSprite, drawArmPixels, drawBody)
+ *   - stickman/arms.js   — arm pose selection (emotion-driven pixel dispatch)
+ *   - stickman/props.js  — character prop icons (one per character)
  *
- * Coordinate system (grid units, Y+ downward):
- *   - 1 grid unit = P=3 display pixels.
- *   - Grid origin is the figure's visual centre (hip level).
- *   - Total figure: ~13 grid-row span × 3 ≈ 42 display px tall.
+ * Coordinate system (sprite pixels, Y+ downward):
+ *   - 1 sprite pixel = P=3 display pixels.
+ *   - Grid origin: sprite col 6 = x 0, sprite row 11 = y 0 (waist level).
+ *   - Total figure: 12 × 20 sprite pixels = 36 × 60 display px.
  *
  * Gravity positioning (managed by renderers/cube-node.js):
- *   - upright:     figure.y = 18
- *   - upside_down: figure.y = -19, scale.y = -1
+ *   - upright:     figure.y = 15  (5 LCD pixels below centre)
+ *   - upside_down: figure.y = -15, scale.y = -1
  *
  * @dependencies PIXI.js v8 — Graphics objects are passed in, not imported.
  */
 
-import { drawHead, drawNeck, drawTorso, drawLegs } from "./stickman/body.js";
+import { drawBody } from "./stickman/body.js";
 import { drawArms } from "./stickman/arms.js";
 import { getCharacterPropDrawer } from "./stickman/props.js";
 
@@ -33,11 +34,8 @@ import { getCharacterPropDrawer } from "./stickman/props.js";
  * @param {string} character  - Any Cube World character name (see constants.js)
  */
 export function drawStickman(gfx, emotion, character) {
-  drawHead(gfx);
-  drawNeck(gfx);
-  drawTorso(gfx);
+  drawBody(gfx);
   drawArms(gfx, emotion, character);
-  drawLegs(gfx);
   gfx.fill(0x000000);
 }
 
